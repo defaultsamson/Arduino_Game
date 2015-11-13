@@ -217,7 +217,7 @@ void input()
   if (rightButtonState && !rightPrevButtonState)
   {
     filteredRightButton = true;
-    Serial.println("[INPUT] Right button pressed.");
+    Serial.println("[INPUT] Right button pressed."); // TODO FIND OUT WHY THIS SPAMS
   }
 
   // Sets the previous button states for the next time input() is called
