@@ -1,5 +1,5 @@
-int leftButtonPin = 0; // The pin ID for the left button
-int rightButtonPin = 1; // The pin ID for the right button
+int leftButtonPin = 3; // The pin ID for the left button
+int rightButtonPin = 2; // The pin ID for the right button
 
 /*
  * Pin 14 = Analog in 0
@@ -9,10 +9,10 @@ int rightButtonPin = 1; // The pin ID for the right button
  * Pin 18 = Analog in 4
  * Pin 19 = Analog in 5
  */
-int pinPixel14 = 14, pinPixel24 = 15, pinPixel34 = 16, pinPixel44 = 17,
-        pinPixel13 = 10, pinPixel23 = 11, pinPixel33 = 12, pinPixel43 = 13,
-        pinPixel12 = 6, pinPixel22 = 7, pinPixel32 = 8, pinPixel42 = 9,
-        pinPixel11 = 2, pinPixel21 = 3, pinPixel31 = 4, pinPixel41 = 5;
+int pinPixel14 = 16, pinPixel24 = 17, pinPixel34 = 18, pinPixel44 = 19,
+        pinPixel13 = 12, pinPixel23 = 13, pinPixel33 = 14, pinPixel43 = 15,
+        pinPixel12 = 8, pinPixel22 = 9, pinPixel32 = 10, pinPixel42 = 11,
+        pinPixel11 = 4, pinPixel21 = 5, pinPixel31 = 6, pinPixel41 = 7;
 
 // Instanciates the pixels and their states 
 // The numbers represent their coordinates
@@ -161,42 +161,42 @@ void renderToHardware()
   if (pixel44) analogWrite(pinPixel44, 255);
   else analogWrite(pinPixel44, 0);
 
+  if (pixel33) analogWrite(pinPixel33, 255);
+  else analogWrite(pinPixel33, 0);
+
+  if (pixel43) analogWrite(pinPixel43, 255);
+  else analogWrite(pinPixel43, 0);
+
 
 
   if (pixel13) digitalWrite(pinPixel13, HIGH);
   else digitalWrite(pinPixel13, LOW);
 
-    if (pixel23) digitalWrite(pinPixel23, HIGH);
+  if (pixel23) digitalWrite(pinPixel23, HIGH);
   else digitalWrite(pinPixel23, LOW);
 
-    if (pixel33) digitalWrite(pinPixel33, HIGH);
-  else digitalWrite(pinPixel33, LOW);
-
-    if (pixel43) digitalWrite(pinPixel43, HIGH);
-  else digitalWrite(pinPixel43, LOW);
-
-    if (pixel12) digitalWrite(pinPixel12, HIGH);
+  if (pixel12) digitalWrite(pinPixel12, HIGH);
   else digitalWrite(pinPixel12, LOW);
 
-    if (pixel22) digitalWrite(pinPixel22, HIGH);
+  if (pixel22) digitalWrite(pinPixel22, HIGH);
   else digitalWrite(pinPixel22, LOW);
 
-    if (pixel32) digitalWrite(pinPixel32, HIGH);
+  if (pixel32) digitalWrite(pinPixel32, HIGH);
   else digitalWrite(pinPixel32, LOW);
 
-    if (pixel42) digitalWrite(pinPixel42, HIGH);
+  if (pixel42) digitalWrite(pinPixel42, HIGH);
   else digitalWrite(pinPixel42, LOW);
 
-    if (pixel11) digitalWrite(pinPixel11, HIGH);
+  if (pixel11) digitalWrite(pinPixel11, HIGH);
   else digitalWrite(pinPixel11, LOW);
 
-    if (pixel21) digitalWrite(pinPixel21, HIGH);
+  if (pixel21) digitalWrite(pinPixel21, HIGH);
   else digitalWrite(pinPixel21, LOW);
 
-    if (pixel31) digitalWrite(pinPixel31, HIGH);
+  if (pixel31) digitalWrite(pinPixel31, HIGH);
   else digitalWrite(pinPixel31, LOW);
 
-    if (pixel41) digitalWrite(pinPixel41, HIGH);
+  if (pixel41) digitalWrite(pinPixel41, HIGH);
   else digitalWrite(pinPixel41, LOW);
 }
 
