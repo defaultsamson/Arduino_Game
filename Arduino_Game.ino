@@ -105,11 +105,12 @@ void loop()
 {
   currentTime = millis();  
 
-  //if ()
-
+  // Constantly updates input
+  input();
+  
   if ((lastTick + tickInterval) < currentTime)
-  {
-    input();
+  { 
+    // Only updates ticks and render 30 times per second
     tick();
     render();
     
