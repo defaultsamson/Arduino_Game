@@ -34,6 +34,8 @@ boolean filteredRightButton; // A filtered output of the right button
 
 long currentTime; // The current time in milliseconds
 
+int currentTick; // The current tick
+
 int playerX;
 
 void setup() 
@@ -73,6 +75,8 @@ void setup()
   filteredRightButton = false;
 
   currentTime = millis();
+
+  currentTick = 0;
   
   clearPixels(); // Sets all the pixel states to false
 
@@ -90,12 +94,17 @@ void loop()
     input();
     tick();
     render();
+    
+    lastTick = currentTime;
   }
 }
 
 void tick()
 {
   
+  
+  
+  currentTick++;
 }
 
 void render()
@@ -217,7 +226,7 @@ void input()
   if (rightButtonState && !rightPrevButtonState)
   {
     filteredRightButton = true;
-    Serial.println("[INPUT] Right button pressed."); // TODO FIND OUT WHY THIS SPAMS
+    Serial.println("[INPUT] Right button pressed.");
   }
 
   // Sets the previous button states for the next time input() is called
