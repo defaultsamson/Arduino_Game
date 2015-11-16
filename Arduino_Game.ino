@@ -36,7 +36,14 @@ long currentTime; // The current time in milliseconds
 
 int currentTick; // The current tick
 
-int playerX;
+int blockDropInterval; // The amount of ticks to wait before dropping a block
+
+int playerX; // The player's x ordinate
+
+int block1x, block1y, 
+    block2x, block2y,
+    block3x, block3y,
+    block4x, block4y;
 
 void setup() 
 {
@@ -80,7 +87,18 @@ void setup()
   
   clearPixels(); // Sets all the pixel states to false
 
+  blockDropInterval = 60;
+
   playerX = 2; // Player's position defaults to 2
+
+  block1x = 0;
+  block1y = 0;
+  block2x = 0;
+  block2y = 0;
+  block3x = 0;
+  block3y = 0;
+  block4x = 0;
+  block4y = 0;
 }
 
 void loop() 
@@ -101,21 +119,112 @@ void loop()
 
 void tick()
 {
+  // Moves the player back and forth based on input
+  if (isLeftButton() && playerX > 1)
+  {
+    playerX--;
+    Serial.print("[PLAYER] Moving player to (");
+    Serial.print(playerX);
+    Serial.println(", 1)");
+  }
+  else if (isRightButton() && playerX < 4)
+  {
+    playerX++;
+    Serial.print("[PLAYER] Moving player to (");
+    Serial.print(playerX);
+    Serial.println(", 1)");
+  }
   
-  
+  // Drops a block at a random x ordinate each interval
+  if (currentTick % blockDropInterval == 0)
+  {
+    int xOrd = random(4) + 1;
+    
+    if (block1y < 1)
+    {
+      block1x = xOrd;
+      block1y = 4;
+    }
+    else if (block2y < 1)
+    {
+      block2x = xOrd;
+      block2y = 4;
+    }
+    else if (block3y < 1)
+    {
+      block3x = xOrd;
+      block3y = 4;
+    }
+    else if (block4y < 1)
+    {
+      block4x = xOrd;
+      block4y = 4;
+    }
+
+    // Outputs to console
+    Serial.print("[BLOCK] Spawning at (");
+    Serial.print(xOrd);
+    Serial.println(", 4)");
+  }
+
+  // Every 100 ticks, make the block interval faster if
+  if (currentTick % 100 == 0 && blockDropInterval > 20)
+  {
+    blockDropInterval--;
+  }
+
+  // Progress the blocks at twice the speec of the drop interval
+  if (currentTick % (blockDropInterval / 2) == 0)
+  {
+    block1y -= 1;
+    block2y -= 1;
+    block3y -= 1;
+    block4y -= 1;
+  }
+
+  // Detects collision with player
+  if (playerX == block1x && block1y == 1)
+  {
+    dead();
+  }
+  else if (playerX == block2x && block2y == 1)
+  {
+    dead();
+  }
+  else if (playerX == block3x && block3y == 1)
+  {
+    dead();
+  }
+  else if (playerX == block4x && block4y == 1)
+  {
+    dead();
+  }
   
   currentTick++;
 }
 
+void dead()
+{
+  
+}
+
+// Draws all the objects to screen
 void render()
 {
   clearPixels(); // Clears all the display data
   
   drawPixel(playerX, 1); // Player is always on the 1st layer
 
+  // Draws all the blocks to screen
+  drawPixel(block1x, block1y);
+  drawPixel(block2x, block2y);
+  drawPixel(block3x, block3y);
+  drawPixel(block4x, block4y);
+
   renderToHardware(); // Renders the draws data to the LED's
 }
 
+// Sets all the pixel data to false
 void clearPixels()
 {
   pixel14 = false; 
@@ -136,6 +245,7 @@ void clearPixels()
   pixel41 = false;
 }
 
+// Sets a pixel at the given coordinate to be drawn.
 void drawPixel(int x, int y)
 {
   if (x == 1 && y == 4) pixel14 = true;
@@ -156,6 +266,7 @@ void drawPixel(int x, int y)
   if (x == 4 && y == 1) pixel41 = true;
 }
 
+// Renders the pixel data to the LEDs
 void renderToHardware()
 {
   if (pixel14) analogWrite(pinPixel14, 255); // Turns an analog LED on 
@@ -219,14 +330,14 @@ void input()
   if (leftButtonState && !leftPrevButtonState)
   {
     filteredLeftButton = true;
-    Serial.println("[INPUT] Left button pressed.");
+    //Serial.println("[INPUT] Left button pressed.");
   }
 
   // If the button was just pressed then set the filter to true
   if (rightButtonState && !rightPrevButtonState)
   {
     filteredRightButton = true;
-    Serial.println("[INPUT] Right button pressed.");
+    //Serial.println("[INPUT] Right button pressed.");
   }
 
   // Sets the previous button states for the next time input() is called
