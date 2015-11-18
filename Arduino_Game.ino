@@ -9,10 +9,10 @@ int rightButtonPin = 2; // The pin ID for the right button
  * Pin 18 = Analog in 4
  * Pin 19 = Analog in 5
  */
-int pinPixel14 = 16, pinPixel24 = 17, pinPixel34 = 18, pinPixel44 = 19,
-        pinPixel13 = 12, pinPixel23 = 13, pinPixel33 = 14, pinPixel43 = 15,
-        pinPixel12 = 8, pinPixel22 = 9, pinPixel32 = 10, pinPixel42 = 11,
-        pinPixel11 = 4, pinPixel21 = 5, pinPixel31 = 6, pinPixel41 = 7;
+int pinPixel14 = 10, pinPixel24 = 6, pinPixel34 = 5, pinPixel44 = 16,
+        pinPixel13 = 11, pinPixel23 = 7, pinPixel33 = 4, pinPixel43 = 17,
+        pinPixel12 = 12, pinPixel22 = 8, pinPixel32 = 14, pinPixel42 = 18,
+        pinPixel11 = 13, pinPixel21 = 9, pinPixel31 = 15, pinPixel41 = 19;
 
 // Instanciates the pixels and their states 
 // The numbers represent their coordinates
@@ -21,16 +21,16 @@ boolean pixel14, pixel24, pixel34, pixel44,
         pixel12, pixel22, pixel32, pixel42,
         pixel11, pixel21, pixel31, pixel41;
 
-int tickInterval; // Frequency of ticks in Hz
-long lastTick; // The millisecond time of the previous tick
+int tickInterval= 1000 / 30; // Frequency of ticks in Hz
+long lastTick = 0; // The millisecond time of the previous tick
 
-boolean leftButtonState; // The left button state
-boolean leftPrevButtonState; // The left button's previous state
-boolean filteredLeftButton; // A filtered output of the left button
+boolean leftButtonState = false; // The left button state
+boolean leftPrevButtonState = true; // The left button's previous state
+boolean filteredLeftButton = false; // A filtered output of the left button
 
-boolean rightButtonState; // The right button state
-boolean rightPrevButtonState; // The right button's previous state
-boolean filteredRightButton; // A filtered output of the right button
+boolean rightButtonState = false; // The right button state
+boolean rightPrevButtonState = true; // The right button's previous state
+boolean filteredRightButton = false; // A filtered output of the right button
 
 long currentTime; // The current time in milliseconds
 
@@ -40,10 +40,17 @@ int blockDropInterval; // The amount of ticks to wait before dropping a block
 
 int playerX; // The player's x ordinate
 
-int block1x, block1y, 
-    block2x, block2y,
-    block3x, block3y,
-    block4x, block4y;
+int blockX[] = {0, 0, 0, 0, 0, 0, 0, 0};
+int blockY[] = {0, 0, 0, 0, 0, 0, 0, 0};
+int blockLength = 8;
+
+boolean isDead = false; // Tells whether the player has died or not
+boolean isWin = false; // Tells whether the player has won the level or not
+int MAX_SCORE = 150; // The score a player has to reach to beat the level
+int score = 0; // The current score of the player
+int displayScore = 0; // The display score for the end LED's
+int currentLevel = 1; // The current level that the player is on
+boolean levelInit = true;
 
 void setup() 
 {
@@ -69,17 +76,6 @@ void setup()
   pinMode(pinPixel21, OUTPUT); 
   pinMode(pinPixel31, OUTPUT); 
   pinMode(pinPixel41, OUTPUT); 
-  
-  tickInterval = 1000 / 30;
-  lastTick = 0;
-  
-  leftButtonState = false;
-  leftPrevButtonState = false;
-  filteredLeftButton = false;
-
-  rightButtonState = false;
-  rightPrevButtonState = false;
-  filteredRightButton = false;
 
   currentTime = millis();
 
@@ -87,18 +83,7 @@ void setup()
   
   clearPixels(); // Sets all the pixel states to false
 
-  blockDropInterval = 60;
-
   playerX = 2; // Player's position defaults to 2
-
-  block1x = 0;
-  block1y = 0;
-  block2x = 0;
-  block2y = 0;
-  block3x = 0;
-  block3y = 0;
-  block4x = 0;
-  block4y = 0;
 }
 
 void loop() 
@@ -110,9 +95,20 @@ void loop()
   
   if ((lastTick + tickInterval) < currentTime)
   { 
-    // Only updates ticks and render 30 times per second
-    tick();
-    render();
+    if (isWin)
+    {
+      
+    }
+    else if (isDead)
+    {
+      
+    }
+    else
+    {
+      // Only updates ticks and render 30 times per second
+      tick();
+      render();
+    }
     
     lastTick = currentTime;
   }
@@ -120,6 +116,20 @@ void loop()
 
 void tick()
 {
+  if (levelInit)
+  {
+    if (currentLevel == 1)
+    {
+      blockDropInterval = 60;
+    }
+    else if (currentLevel == 2)
+    {
+      blockDropInterval = 120;
+    }
+
+    levelInit = false;
+  }
+  
   // Moves the player back and forth based on input
   if (isLeftButton() && playerX > 1)
   {
@@ -136,36 +146,48 @@ void tick()
     Serial.println(", 1)");
   }
   
+  // Progress the blocks at twice the speec of the drop interval
+  if (currentTick % (blockDropInterval / 2) == 0)
+  {
+    for (int i = 0; i < blockLength; i++)
+    {
+      blockY[i] -= 1;
+    }
+  }
+
   // Drops a block at a random x ordinate each interval
   if (currentTick % blockDropInterval == 0)
   {
-    int xOrd = random(4) + 1;
-    
-    if (block1y < 1)
+    if (currentLevel == 1) // First level, single blocks
     {
-      block1x = xOrd;
-      block1y = 4;
+      int xOrd = random(4) + 1;
+  
+      // Sets a off-screen block's coordinates to the top of the screen
+      boolean hasSelected = false;
+      for (int i = 0; i < blockLength; i++)
+      {
+        if (blockY[i] < 1 && !hasSelected)
+        {
+          blockX[i] = xOrd;
+          blockY[i] = 4;
+          hasSelected = true;
+          score++; // Give the player a point each block drop
+        }
+      }
+      
+      // Outputs to console
+      Serial.print("[BLOCK] Spawning at (");
+      Serial.print(xOrd);
+      Serial.println(", 4)");
     }
-    else if (block2y < 1)
+    else if (currentLevel == 2) // Second level, shapes
     {
-      block2x = xOrd;
-      block2y = 4;
+      
     }
-    else if (block3y < 1)
+    else // Boss level
     {
-      block3x = xOrd;
-      block3y = 4;
+      
     }
-    else if (block4y < 1)
-    {
-      block4x = xOrd;
-      block4y = 4;
-    }
-
-    // Outputs to console
-    Serial.print("[BLOCK] Spawning at (");
-    Serial.print(xOrd);
-    Serial.println(", 4)");
   }
 
   // Every 100 ticks, make the block interval faster if
@@ -174,31 +196,19 @@ void tick()
     blockDropInterval--;
   }
 
-  // Progress the blocks at twice the speec of the drop interval
-  if (currentTick % (blockDropInterval / 2) == 0)
+  // If the player's score is greater than that required to win the level
+  if (score >= MAX_SCORE)
   {
-    block1y -= 1;
-    block2y -= 1;
-    block3y -= 1;
-    block4y -= 1;
+    win();
   }
-
+  
   // Detects collision with player
-  if (playerX == block1x && block1y == 1)
+  for (int i = 0; i < blockLength; i++)
   {
-    dead();
-  }
-  else if (playerX == block2x && block2y == 1)
-  {
-    dead();
-  }
-  else if (playerX == block3x && block3y == 1)
-  {
-    dead();
-  }
-  else if (playerX == block4x && block4y == 1)
-  {
-    dead();
+    if (playerX == blockX[i] && blockY[i] == 1)
+    {
+      dead();
+    }
   }
   
   currentTick++;
@@ -206,7 +216,14 @@ void tick()
 
 void dead()
 {
-  
+  isDead = true;
+  levelInit = true;
+}
+
+void win()
+{
+  isWin = true;
+  levelInit = true;
 }
 
 // Draws all the objects to screen
@@ -217,10 +234,10 @@ void render()
   drawPixel(playerX, 1); // Player is always on the 1st layer
 
   // Draws all the blocks to screen
-  drawPixel(block1x, block1y);
-  drawPixel(block2x, block2y);
-  drawPixel(block3x, block3y);
-  drawPixel(block4x, block4y);
+  for (int i = 0; i < blockLength; i++)
+  {
+    drawPixel(blockX[i], blockY[i]);
+  }
 
   renderToHardware(); // Renders the draws data to the LED's
 }
