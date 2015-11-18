@@ -49,7 +49,7 @@ boolean isWin = false; // Tells whether the player has won the level or not
 int MAX_SCORE = 150; // The score a player has to reach to beat the level
 int score = 0; // The current score of the player
 int displayScore = 0; // The display score for the end LED's
-int currentLevel = 1; // The current level that the player is on
+int currentLevel = 2; // The current level that the player is on
 boolean levelInit = true;
 
 void setup() 
@@ -124,7 +124,7 @@ void tick()
     }
     else if (currentLevel == 2)
     {
-      blockDropInterval = 120;
+      blockDropInterval = 180;
     }
 
     levelInit = false;
@@ -147,7 +147,7 @@ void tick()
   }
   
   // Progress the blocks at twice the speec of the drop interval
-  if (currentTick % (blockDropInterval / 2) == 0)
+  if (currentTick % (blockDropInterval / 4) == 0)
   {
     for (int i = 0; i < blockLength; i++)
     {
@@ -158,31 +158,99 @@ void tick()
   // Drops a block at a random x ordinate each interval
   if (currentTick % blockDropInterval == 0)
   {
+    score++; // Give the player a point each block drop
+    
     if (currentLevel == 1) // First level, single blocks
     {
       int xOrd = random(4) + 1;
   
-      // Sets a off-screen block's coordinates to the top of the screen
-      boolean hasSelected = false;
-      for (int i = 0; i < blockLength; i++)
-      {
-        if (blockY[i] < 1 && !hasSelected)
-        {
-          blockX[i] = xOrd;
-          blockY[i] = 4;
-          hasSelected = true;
-          score++; // Give the player a point each block drop
-        }
-      }
-      
-      // Outputs to console
-      Serial.print("[BLOCK] Spawning at (");
-      Serial.print(xOrd);
-      Serial.println(", 4)");
+      spawnBlock(xOrd, 4);
     }
     else if (currentLevel == 2) // Second level, shapes
     {
+      int shape = random(10) + 1; // Selects randomly between the shape cases
+
+      int xOffset = random(4) + 1; // Generates the main segment of a shape with a random offset
       
+      switch (shape) // Random shape generation
+      {
+        // [][]
+        //   []
+        //   []
+        case 1: 
+          spawnBlock(xOffset, 4);
+          spawnBlock(xOffset, 5);
+          spawnBlock(xOffset, 6);
+          spawnBlock(xOffset - 1, 6);
+          break;
+
+        // [][]
+        // []
+        // []
+        case 2:
+          spawnBlock(xOffset, 4);
+          spawnBlock(xOffset, 5);
+          spawnBlock(xOffset, 6);
+          spawnBlock(xOffset + 1, 6);
+          break;
+
+        // [][]
+        // [][]
+        case 3:
+          spawnBlock(xOffset, 4);
+          spawnBlock(xOffset + 1, 4);
+          spawnBlock(xOffset, 5);
+          spawnBlock(xOffset + 1, 5);
+          break;
+
+        //   []
+        // [][][]
+        case 5:
+          spawnBlock(xOffset - 1, 4);
+          spawnBlock(xOffset, 4);
+          spawnBlock(xOffset + 1, 4);
+          spawnBlock(xOffset, 5);
+          break;
+
+        // [][][]
+        //   []
+        case 6:
+          spawnBlock(xOffset - 1, 5);
+          spawnBlock(xOffset, 5);
+          spawnBlock(xOffset + 1, 5);
+          spawnBlock(xOffset, 4);
+          break;
+
+        //   [][]
+        // [][]
+        case 7:
+          spawnBlock(xOffset - 1, 4);
+          spawnBlock(xOffset, 4);
+          spawnBlock(xOffset, 5);
+          spawnBlock(xOffset + 1, 5);
+          break;
+
+        // [][]
+        //   [][]
+        case 8:
+          spawnBlock(xOffset - 1, 5);
+          spawnBlock(xOffset, 5);
+          spawnBlock(xOffset, 4);
+          spawnBlock(xOffset + 1, 4);
+          break;
+
+        // []
+        // []
+        // []
+        // []
+        case 9: // Two cases because it has twice the chance of spawning
+        case 10:
+          spawnBlock(xOffset, 4);
+          spawnBlock(xOffset, 5);
+          spawnBlock(xOffset, 6);
+          spawnBlock(xOffset, 7);
+          break;
+      }
     }
     else // Boss level
     {
@@ -212,6 +280,29 @@ void tick()
   }
   
   currentTick++;
+}
+
+void spawnBlock(int x, int y)
+{
+  boolean hasSelected = false;
+  for (int i = 0; i < blockLength; i++)
+  {
+    // Chooses a block that is off screen below it, or off side to the left or right
+    // NOT FROM ABOVE because those blocks will progress onto the screen eventually
+    if ((blockY[i] < 1 || blockX[i] < 1 || blockX[i] > 4) && !hasSelected)
+    {
+      blockX[i] = x;
+      blockY[i] = y;
+      hasSelected = true;
+    }
+  }
+
+  // Outputs to console
+  Serial.print("[BLOCK] Spawning at (");
+  Serial.print(x);
+  Serial.print(", ");
+  Serial.print(y);
+  Serial.println(")");
 }
 
 void dead()
