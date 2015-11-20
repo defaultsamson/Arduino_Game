@@ -51,7 +51,7 @@ int blockLength = 8;
 boolean isDead = false; // Tells whether the player has died or not
 boolean isWin = false; // Tells whether the player has won the level or not
 
-int currentLevel = 1; // The current level that the player is on
+int currentLevel = 2; // The current level that the player is on
 boolean levelInit = true; // If program should initialize the variables using for tick to the new currentLevel's settings 
 
 int MAX_SCORE = 150; // The score a player has to reach to beat the level
@@ -88,11 +88,11 @@ void setup()
 
 void loop() 
 {
-  currentTime = millis();  
+  currentTime = millis();
 
   // Constantly updates input for better responsiveness
   input();
-
+  
   // Limits tick and render methods to only run at the speed of the tickInterval (currently 30Hz)
   if ((lastTick + tickInterval) < currentTime)
   { 
@@ -162,8 +162,8 @@ void tick()
     }
   }
 
-  // Drops blocks each interval
-  if (currentTick % blockDropInterval == 0)
+  // Spawns blocks each interval
+  if (currentTick % blockDropInterval == 0) // TODO doesn't always spawn shapes for some reason. Make more reliable
   {
     score++; // Give the player a point each block drop
 
@@ -176,7 +176,7 @@ void tick()
     }
     else if (currentLevel == 2) // Second level, shapes
     {
-      int shape = random(10) + 1; // Selects randomly between the shape cases
+      int shape = random(9) + 1; // Selects randomly between the shape cases
 
       int xOffset = random(4) + 1; // Generates the main segment of a shape with a random offset
       
@@ -213,7 +213,7 @@ void tick()
 
         //   []
         // [][][]
-        case 5:
+        case 4:
           spawnBlock(xOffset - 1, 4);
           spawnBlock(xOffset, 4);
           spawnBlock(xOffset + 1, 4);
@@ -222,7 +222,7 @@ void tick()
 
         // [][][]
         //   []
-        case 6:
+        case 5:
           spawnBlock(xOffset - 1, 5);
           spawnBlock(xOffset, 5);
           spawnBlock(xOffset + 1, 5);
@@ -231,7 +231,7 @@ void tick()
 
         //   [][]
         // [][]
-        case 7:
+        case 6:
           spawnBlock(xOffset - 1, 4);
           spawnBlock(xOffset, 4);
           spawnBlock(xOffset, 5);
@@ -240,7 +240,7 @@ void tick()
 
         // [][]
         //   [][]
-        case 8:
+        case 7:
           spawnBlock(xOffset - 1, 5);
           spawnBlock(xOffset, 5);
           spawnBlock(xOffset, 4);
@@ -251,8 +251,8 @@ void tick()
         // []
         // []
         // []
-        case 9: // Two cases because it has twice the chance of spawning
-        case 10:
+        case 8: // Two cases because it has twice the chance of spawning
+        case 9:
           spawnBlock(xOffset, 4);
           spawnBlock(xOffset, 5);
           spawnBlock(xOffset, 6);
@@ -293,16 +293,15 @@ void tick()
 // Spawns a block at the given coordinates
 void spawnBlock(int x, int y)
 {
-  boolean hasSelected = false;
   for (int i = 0; i < blockLength; i++)
   {
     // Chooses a block that is off screen below it, or off side to the left or right
     // NOT FROM ABOVE because those blocks will progress onto the screen eventually
-    if ((blockY[i] < 1 || blockX[i] < 1 || blockX[i] > 4) && !hasSelected)
+    if (blockY[i] < 1 || blockX[i] < 1 || blockX[i] > 4)
     {
       blockX[i] = x;
       blockY[i] = y;
-      hasSelected = true;
+      return;
     }
   }
 
@@ -390,7 +389,8 @@ void drawPixel(int x, int y)
 }
 
 // Renders the pixel data to the LEDs
-void renderToHardware() // TODO optimize so it doesn't send data to LED's that are already in the desired state
+// TODO optimize so it doesn't send data to LED's that are already in the desired state
+void renderToHardware() 
 {
   if (pixel14) analogWrite(pinPixel14, 255); // Turns an analog LED on 
   else analogWrite(pinPixel14, 0); // Turns an analog LED off
