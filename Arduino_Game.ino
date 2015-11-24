@@ -12,17 +12,17 @@ int rightButtonPin = 2; // The pin assigned to the right button
  * Pin 19 = Analog in 5
  */
  // Instanciates the pin assigned to each pixel
-int pinPixel14 = 10, pinPixel24 = 6, pinPixel34 = 5, pinPixel44 = 16,
-        pinPixel13 = 11, pinPixel23 = 7, pinPixel33 = 4, pinPixel43 = 17,
-        pinPixel12 = 12, pinPixel22 = 8, pinPixel32 = 14, pinPixel42 = 18,
-        pinPixel11 = 13, pinPixel21 = 9, pinPixel31 = 15, pinPixel41 = 19;
+int pixelPin[] = {10, 6, 5, 16,
+                  11, 7, 4, 17,
+                  12, 8, 14, 18,
+                  13, 9, 15, 19};
 
-// Instanciates the pixels and their states 
-// The numbers represent their coordinates
-boolean pixel14, pixel24, pixel34, pixel44,
-        pixel13, pixel23, pixel33, pixel43,
-        pixel12, pixel22, pixel32, pixel42,
-        pixel11, pixel21, pixel31, pixel41;
+// Instanciates the pixel data pixels and their states 
+boolean pixelData[] = {false, false, false, false,
+                       false, false, false, false,
+                       false, false, false, false,
+                       false, false, false, false};
+int pixelCount = 16;
 
 int tickInterval= 1000 / 30; // Interval between each tick (1000ms / 30 Hz)
 long lastTick = 0; // The millisecond time of the previous tick
@@ -66,22 +66,11 @@ void setup()
   pinMode(leftButtonPin, INPUT);
   pinMode(rightButtonPin, INPUT);
 
-  pinMode(pinPixel14, OUTPUT); 
-  pinMode(pinPixel24, OUTPUT); 
-  pinMode(pinPixel34, OUTPUT); 
-  pinMode(pinPixel44, OUTPUT); 
-  pinMode(pinPixel13, OUTPUT); 
-  pinMode(pinPixel23, OUTPUT); 
-  pinMode(pinPixel33, OUTPUT); 
-  pinMode(pinPixel43, OUTPUT); 
-  pinMode(pinPixel12, OUTPUT); 
-  pinMode(pinPixel22, OUTPUT); 
-  pinMode(pinPixel32, OUTPUT); 
-  pinMode(pinPixel42, OUTPUT); 
-  pinMode(pinPixel11, OUTPUT); 
-  pinMode(pinPixel21, OUTPUT); 
-  pinMode(pinPixel31, OUTPUT); 
-  pinMode(pinPixel41, OUTPUT); 
+  // Sets all the pins attatched to pixels to output
+  for (int i = 0; i < pixelCount; i++)
+  {
+    pinMode(pixelPin[i], OUTPUT); 
+  }
   
   clearPixels(); // Sets all the pixel states to false
 }
@@ -349,98 +338,50 @@ void render()
 // Sets all the pixel data to false
 void clearPixels()
 {
-  pixel14 = false; 
-  pixel24 = false; 
-  pixel34 = false; 
-  pixel44 = false;
-  pixel13 = false; 
-  pixel23 = false; 
-  pixel33 = false; 
-  pixel43 = false;
-  pixel12 = false; 
-  pixel22 = false; 
-  pixel32 = false; 
-  pixel42 = false;
-  pixel11 = false; 
-  pixel21 = false; 
-  pixel31 = false; 
-  pixel41 = false;
+  for (int i = 0; i < pixelCount; i++)
+  {
+    pixelData[i] = false;
+  }
 }
 
 // Sets a pixel at the given coordinate to be drawn.
 void drawPixel(int x, int y)
 {
-  if (x == 1 && y == 4) pixel14 = true;
-  if (x == 2 && y == 4) pixel24 = true;
-  if (x == 3 && y == 4) pixel34 = true;
-  if (x == 4 && y == 4) pixel44 = true;
-  if (x == 1 && y == 3) pixel13 = true;
-  if (x == 2 && y == 3) pixel23 = true;
-  if (x == 3 && y == 3) pixel33 = true;
-  if (x == 4 && y == 3) pixel43 = true;
-  if (x == 1 && y == 2) pixel12 = true;
-  if (x == 2 && y == 2) pixel22 = true;
-  if (x == 3 && y == 2) pixel32 = true;
-  if (x == 4 && y == 2) pixel42 = true;
-  if (x == 1 && y == 1) pixel11 = true;
-  if (x == 2 && y == 1) pixel21 = true;
-  if (x == 3 && y == 1) pixel31 = true;
-  if (x == 4 && y == 1) pixel41 = true;
+  // converts coords parameters from bottom left from 1-4
+  // To top left from 0-3
+  int newY = 4 - y;
+  int newX = x - 1;
+
+  // The index of the pixel for the specified coordinate
+  int index = (newY * 4) + newX;
+  
+  pixelData[index] = true;
 }
 
 // Renders the pixel data to the LEDs
-// TODO optimize so it doesn't send data to LED's that are already in the desired state
 void renderToHardware() 
 {
-  if (pixel14) analogWrite(pinPixel14, 255); // Turns an analog LED on 
-  else analogWrite(pinPixel14, 0); // Turns an analog LED off
+  // Renders pixelData to all of pixelPin
+  for (int i = 0; i < pixelCount; i++)
+  {
+    // Determines if the pin is digital or not
+    boolean isDigital = !(pixelPin[i] >= 14);
 
-  if (pixel24) analogWrite(pinPixel24, 255);
-  else analogWrite(pinPixel24, 0);
-
-  if (pixel34) analogWrite(pinPixel34, 255);
-  else analogWrite(pinPixel34, 0);
-
-  if (pixel44) analogWrite(pinPixel44, 255);
-  else analogWrite(pinPixel44, 0);
-
-  if (pixel33) analogWrite(pinPixel33, 255);
-  else analogWrite(pinPixel33, 0);
-
-  if (pixel43) analogWrite(pinPixel43, 255);
-  else analogWrite(pinPixel43, 0);
-
-
-
-  if (pixel13) digitalWrite(pinPixel13, HIGH);
-  else digitalWrite(pinPixel13, LOW);
-
-  if (pixel23) digitalWrite(pinPixel23, HIGH);
-  else digitalWrite(pinPixel23, LOW);
-
-  if (pixel12) digitalWrite(pinPixel12, HIGH);
-  else digitalWrite(pinPixel12, LOW);
-
-  if (pixel22) digitalWrite(pinPixel22, HIGH);
-  else digitalWrite(pinPixel22, LOW);
-
-  if (pixel32) digitalWrite(pinPixel32, HIGH);
-  else digitalWrite(pinPixel32, LOW);
-
-  if (pixel42) digitalWrite(pinPixel42, HIGH);
-  else digitalWrite(pinPixel42, LOW);
-
-  if (pixel11) digitalWrite(pinPixel11, HIGH);
-  else digitalWrite(pinPixel11, LOW);
-
-  if (pixel21) digitalWrite(pinPixel21, HIGH);
-  else digitalWrite(pinPixel21, LOW);
-
-  if (pixel31) digitalWrite(pinPixel31, HIGH);
-  else digitalWrite(pinPixel31, LOW);
-
-  if (pixel41) digitalWrite(pinPixel41, HIGH);
-  else digitalWrite(pinPixel41, LOW);
+    // Turn a pixel on if its pixel data is true
+    if (pixelData[i])
+    {
+      // Write to the pin based on if it's digital/analog
+      if (isDigital) digitalWrite(pixelPin[i], HIGH);
+      else analogWrite(pixelPin[i], 255); // Turns an analog LED on  
+    }
+    // Else turn a pixel off
+    else
+    {
+      // Write to the pin based on if it's digital/analog
+      if (isDigital) digitalWrite(pixelPin[i], LOW);
+      else analogWrite(pixelPin[i], 0); // Turns an analog LED off
+    }
+  }
 }
 
 void input()
@@ -453,14 +394,14 @@ void input()
   if (leftButtonState && !leftPrevButtonState)
   {
     filteredLeftButton = true;
-    //Serial.println("[INPUT] Left button pressed.");
+    Serial.println("[INPUT] Left button pressed.");
   }
 
   // If the button was just pressed then set the filter to true
   if (rightButtonState && !rightPrevButtonState)
   {
     filteredRightButton = true;
-    //Serial.println("[INPUT] Right button pressed.");
+    Serial.println("[INPUT] Right button pressed.");
   }
 
   // Sets the previous button states for the next time input() is called
