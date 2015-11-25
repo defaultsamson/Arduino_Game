@@ -113,9 +113,21 @@ void loop()
 {
   currentTime = millis();  
 
+<<<<<<< HEAD
   // Constantly updates input
   input();
   
+=======
+  // Constantly updates input for better responsiveness
+<<<<<<< HEAD
+  //input();
+  
+=======
+  input();
+
+>>>>>>> parent of 678cffd... Basic Bugs
+  // Limits tick and render methods to only run at the speed of the tickInterval (currently 30Hz)
+>>>>>>> parent of 45dc8c4... Fixed garbag
   if ((lastTick + tickInterval) < currentTime)
   { 
     if (isWin)
@@ -128,7 +140,11 @@ void loop()
     }
     else
     {
+<<<<<<< HEAD
       // Only updates ticks and render 30 times per second
+=======
+      input();
+>>>>>>> parent of 45dc8c4... Fixed garbag
       tick();
       render();
     }
@@ -383,8 +399,13 @@ void drawPixel(int x, int y)
 <<<<<<< HEAD
 void renderToHardware() 
 =======
+<<<<<<< HEAD
 void renderToHardware()
 >>>>>>> parent of 5256018... Code-Skimming
+=======
+void renderToHardware() // TODO optimize so it doesn't send data to LED's that are already in the desired state
+>>>>>>> parent of 678cffd... Basic Bugs
+>>>>>>> parent of 45dc8c4... Fixed garbag
 {
   // Renders pixelData to all of pixelPin
   for (int i = 0; i < pixelCount; i++)
