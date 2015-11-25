@@ -80,13 +80,8 @@ void loop()
   currentTime = millis();  
 
   // Constantly updates input for better responsiveness
-<<<<<<< HEAD
-  //input();
-  
-=======
   input();
 
->>>>>>> parent of 678cffd... Basic Bugs
   // Limits tick and render methods to only run at the speed of the tickInterval (currently 30Hz)
   if ((lastTick + tickInterval) < currentTime)
   { 
@@ -100,7 +95,6 @@ void loop()
     }
     else // Else, the player must still be in-game
     {
-      input();
       tick();
       render();
     }
@@ -366,11 +360,7 @@ void drawPixel(int x, int y)
 }
 
 // Renders the pixel data to the LEDs
-<<<<<<< HEAD
 void renderToHardware() 
-=======
-void renderToHardware() // TODO optimize so it doesn't send data to LED's that are already in the desired state
->>>>>>> parent of 678cffd... Basic Bugs
 {
   // Renders pixelData to all of pixelPin
   for (int i = 0; i < pixelCount; i++)
