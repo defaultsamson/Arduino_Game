@@ -1,7 +1,9 @@
-int leftButtonPin = 3; // The pin ID for the left button
-int rightButtonPin = 2; // The pin ID for the right button
+int leftButtonPin = 3; // The pin assigned to the left button
+int rightButtonPin = 2; // The pin assigned to the right button
 
 /*
+ * Analogue pin legend
+ * 
  * Pin 14 = Analog in 0
  * Pin 15 = Analog in 1
  * Pin 16 = Analog in 2
@@ -9,7 +11,6 @@ int rightButtonPin = 2; // The pin ID for the right button
  * Pin 18 = Analog in 4
  * Pin 19 = Analog in 5
  */
-<<<<<<< HEAD
  // Instanciates the pin assigned to each pixel
 int pixelPin[] = {10, 6, 5, 16,
                   11, 7, 4, 17,
@@ -22,38 +23,26 @@ boolean pixelData[] = {false, false, false, false,
                        false, false, false, false,
                        false, false, false, false};
 int pixelCount = 16;
-=======
-int pinPixel14 = 10, pinPixel24 = 6, pinPixel34 = 5, pinPixel44 = 16,
-        pinPixel13 = 11, pinPixel23 = 7, pinPixel33 = 4, pinPixel43 = 17,
-        pinPixel12 = 12, pinPixel22 = 8, pinPixel32 = 14, pinPixel42 = 18,
-        pinPixel11 = 13, pinPixel21 = 9, pinPixel31 = 15, pinPixel41 = 19;
 
-// Instanciates the pixels and their states 
-// The numbers represent their coordinates
-boolean pixel14, pixel24, pixel34, pixel44,
-        pixel13, pixel23, pixel33, pixel43,
-        pixel12, pixel22, pixel32, pixel42,
-        pixel11, pixel21, pixel31, pixel41;
->>>>>>> parent of 5256018... Code-Skimming
-
-int tickInterval= 1000 / 30; // Frequency of ticks in Hz
+int tickInterval= 1000 / 30; // Interval between each tick (1000ms / 30 Hz)
 long lastTick = 0; // The millisecond time of the previous tick
 
 boolean leftButtonState = false; // The left button state
-boolean leftPrevButtonState = true; // The left button's previous state
+boolean leftPrevButtonState = true; // The left button's previous state (true to prevent program from thinking button was pushed at beginning)
 boolean filteredLeftButton = false; // A filtered output of the left button
 
 boolean rightButtonState = false; // The right button state
-boolean rightPrevButtonState = true; // The right button's previous state
+boolean rightPrevButtonState = true; // The right button's previous state (true to prevent program from thinking button was pushed at beginning)
 boolean filteredRightButton = false; // A filtered output of the right button
 
-long currentTime; // The current time in milliseconds
+long currentTime; // The current time in milliseconds (sets variable at beginning of each tick)
 
-int currentTick; // The current tick
+int currentTick = 0; // The current tick (starts at 0)
 
 int blockDropInterval; // The amount of ticks to wait before dropping a block
 
-int playerX; // The player's x ordinate
+int playerX = 2; // The player's x ordinate (defaults to 2 when game first starts)
+                 // CANNOT GO BELOW 1 OR ABOVE 4
 
 int blockX[] = {0, 0, 0, 0, 0, 0, 0, 0};
 int blockY[] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -61,11 +50,13 @@ int blockLength = 8;
 
 boolean isDead = false; // Tells whether the player has died or not
 boolean isWin = false; // Tells whether the player has won the level or not
+
+int currentLevel = 2; // The current level that the player is on
+boolean levelInit = true; // If program should initialize the variables using for tick to the new currentLevel's settings 
+
 int MAX_SCORE = 150; // The score a player has to reach to beat the level
 int score = 0; // The current score of the player
 int displayScore = 0; // The display score for the end LED's
-int currentLevel = 2; // The current level that the player is on
-boolean levelInit = true;
 
 void setup() 
 {
@@ -75,86 +66,47 @@ void setup()
   pinMode(leftButtonPin, INPUT);
   pinMode(rightButtonPin, INPUT);
 
-<<<<<<< HEAD
   // Sets all the pins attatched to pixels to output
   for (int i = 0; i < pixelCount; i++)
   {
     pinMode(pixelPin[i], OUTPUT); 
   }
-=======
-  pinMode(pinPixel14, OUTPUT); 
-  pinMode(pinPixel24, OUTPUT); 
-  pinMode(pinPixel34, OUTPUT); 
-  pinMode(pinPixel44, OUTPUT); 
-  pinMode(pinPixel13, OUTPUT); 
-  pinMode(pinPixel23, OUTPUT); 
-  pinMode(pinPixel33, OUTPUT); 
-  pinMode(pinPixel43, OUTPUT); 
-  pinMode(pinPixel12, OUTPUT); 
-  pinMode(pinPixel22, OUTPUT); 
-  pinMode(pinPixel32, OUTPUT); 
-  pinMode(pinPixel42, OUTPUT); 
-  pinMode(pinPixel11, OUTPUT); 
-  pinMode(pinPixel21, OUTPUT); 
-  pinMode(pinPixel31, OUTPUT); 
-  pinMode(pinPixel41, OUTPUT); 
-
-  currentTime = millis();
-
-  currentTick = 0;
->>>>>>> parent of 5256018... Code-Skimming
   
   clearPixels(); // Sets all the pixel states to false
-
-  playerX = 2; // Player's position defaults to 2
 }
 
 void loop() 
 {
-  currentTime = millis();  
+  currentTime = millis();
 
-<<<<<<< HEAD
-  // Constantly updates input
-  input();
-  
-=======
   // Constantly updates input for better responsiveness
-<<<<<<< HEAD
   //input();
   
-=======
-  input();
-
->>>>>>> parent of 678cffd... Basic Bugs
   // Limits tick and render methods to only run at the speed of the tickInterval (currently 30Hz)
->>>>>>> parent of 45dc8c4... Fixed garbag
   if ((lastTick + tickInterval) < currentTime)
   { 
-    if (isWin)
+    if (isWin) // If the player won the level
     {
       
     }
-    else if (isDead)
+    else if (isDead) // If the player is dead
     {
       
     }
-    else
+    else // Else, the player must still be in-game
     {
-<<<<<<< HEAD
-      // Only updates ticks and render 30 times per second
-=======
       input();
->>>>>>> parent of 45dc8c4... Fixed garbag
       tick();
       render();
     }
     
-    lastTick = currentTime;
+    lastTick = currentTime; // Saves the current system time of this tick for next tick's reference
   }
 }
 
 void tick()
 {
+  // Initializes the variables for each level based on their difficulty
   if (levelInit)
   {
     if (currentLevel == 1)
@@ -165,11 +117,17 @@ void tick()
     {
       blockDropInterval = 180;
     }
+    else
+    {
+      blockDropInterval = 10;
+      Serial.println("[ERROR] Level variables could not be initialized.");
+      Serial.println("[ERROR] Reason: currentLevel is out of bounds.");
+    }
 
     levelInit = false;
   }
   
-  // Moves the player back and forth based on input
+  // Moves the player back and forth based on input, and whether they're in the bounds of the screen or not
   if (isLeftButton() && playerX > 1)
   {
     playerX--;
@@ -185,7 +143,7 @@ void tick()
     Serial.println(", 1)");
   }
   
-  // Progress the blocks at twice the speec of the drop interval
+  // Progress the blocks at twice the speed of the drop interval
   if (currentTick % (blockDropInterval / 4) == 0)
   {
     for (int i = 0; i < blockLength; i++)
@@ -194,20 +152,21 @@ void tick()
     }
   }
 
-  // Drops a block at a random x ordinate each interval
-  if (currentTick % blockDropInterval == 0)
+  // Spawns blocks each interval
+  if (currentTick % blockDropInterval == 0) // TODO doesn't always spawn shapes for some reason. Make more reliable
   {
     score++; // Give the player a point each block drop
-    
+
     if (currentLevel == 1) // First level, single blocks
     {
       int xOrd = random(4) + 1;
-  
+
+      // Spawn block at top of the screen at a random x ordinate
       spawnBlock(xOrd, 4);
     }
     else if (currentLevel == 2) // Second level, shapes
     {
-      int shape = random(10) + 1; // Selects randomly between the shape cases
+      int shape = random(9) + 1; // Selects randomly between the shape cases
 
       int xOffset = random(4) + 1; // Generates the main segment of a shape with a random offset
       
@@ -244,7 +203,7 @@ void tick()
 
         //   []
         // [][][]
-        case 5:
+        case 4:
           spawnBlock(xOffset - 1, 4);
           spawnBlock(xOffset, 4);
           spawnBlock(xOffset + 1, 4);
@@ -253,7 +212,7 @@ void tick()
 
         // [][][]
         //   []
-        case 6:
+        case 5:
           spawnBlock(xOffset - 1, 5);
           spawnBlock(xOffset, 5);
           spawnBlock(xOffset + 1, 5);
@@ -262,7 +221,7 @@ void tick()
 
         //   [][]
         // [][]
-        case 7:
+        case 6:
           spawnBlock(xOffset - 1, 4);
           spawnBlock(xOffset, 4);
           spawnBlock(xOffset, 5);
@@ -271,7 +230,7 @@ void tick()
 
         // [][]
         //   [][]
-        case 8:
+        case 7:
           spawnBlock(xOffset - 1, 5);
           spawnBlock(xOffset, 5);
           spawnBlock(xOffset, 4);
@@ -282,8 +241,8 @@ void tick()
         // []
         // []
         // []
-        case 9: // Two cases because it has twice the chance of spawning
-        case 10:
+        case 8: // Two cases because it has twice the chance of spawning
+        case 9:
           spawnBlock(xOffset, 4);
           spawnBlock(xOffset, 5);
           spawnBlock(xOffset, 6);
@@ -297,8 +256,8 @@ void tick()
     }
   }
 
-  // Every 100 ticks, make the block interval faster if
-  if (currentTick % 100 == 0 && blockDropInterval > 20)
+  // Every 100 ticks, make the block interval faster if it is above a specified maximum rate (in this case, 20)
+  if (currentTick % 100 == 0 && blockDropInterval > 20) // TODO Make specified maximum rate a level variable, and make separate variable for rate of change instead of using 100
   {
     blockDropInterval--;
   }
@@ -321,18 +280,18 @@ void tick()
   currentTick++;
 }
 
+// Spawns a block at the given coordinates
 void spawnBlock(int x, int y)
 {
-  boolean hasSelected = false;
   for (int i = 0; i < blockLength; i++)
   {
     // Chooses a block that is off screen below it, or off side to the left or right
     // NOT FROM ABOVE because those blocks will progress onto the screen eventually
-    if ((blockY[i] < 1 || blockX[i] < 1 || blockX[i] > 4) && !hasSelected)
+    if (blockY[i] < 1 || blockX[i] < 1 || blockX[i] > 4)
     {
       blockX[i] = x;
       blockY[i] = y;
-      hasSelected = true;
+      return;
     }
   }
 
@@ -346,14 +305,19 @@ void spawnBlock(int x, int y)
 
 void dead()
 {
+  Serial.println("[GAME] Player has died.");
   isDead = true;
   levelInit = true;
 }
 
 void win()
 {
+  Serial.print("[GAME] Player has completed level ");
+  Serial.print(currentLevel);
+  Serial.println(".");
   isWin = true;
   levelInit = true;
+  currentLevel++;
 }
 
 // Draws all the objects to screen
@@ -396,16 +360,7 @@ void drawPixel(int x, int y)
 }
 
 // Renders the pixel data to the LEDs
-<<<<<<< HEAD
 void renderToHardware() 
-=======
-<<<<<<< HEAD
-void renderToHardware()
->>>>>>> parent of 5256018... Code-Skimming
-=======
-void renderToHardware() // TODO optimize so it doesn't send data to LED's that are already in the desired state
->>>>>>> parent of 678cffd... Basic Bugs
->>>>>>> parent of 45dc8c4... Fixed garbag
 {
   // Renders pixelData to all of pixelPin
   for (int i = 0; i < pixelCount; i++)
