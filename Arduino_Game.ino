@@ -80,7 +80,7 @@ void loop()
   currentTime = millis();
 
   // Constantly updates input for better responsiveness
-  input();
+  //input();
   
   // Limits tick and render methods to only run at the speed of the tickInterval (currently 30Hz)
   if ((lastTick + tickInterval) < currentTime)
@@ -95,6 +95,7 @@ void loop()
     }
     else // Else, the player must still be in-game
     {
+      input();
       tick();
       render();
     }
@@ -134,7 +135,7 @@ void tick()
     Serial.print(playerX);
     Serial.println(", 1)");
   }
-  if (isRightButton() && playerX < 4)
+  else if (isRightButton() && playerX < 4)
   {
     playerX++;
     Serial.print("[PLAYER] Moving player to (");
@@ -394,14 +395,13 @@ void input()
   if (leftButtonState && !leftPrevButtonState)
   {
     filteredLeftButton = true;
-    Serial.println("[INPUT] Left button pressed.");
+    //Serial.println("[INPUT] Left button pressed.");
   }
 
   // If the button was just pressed then set the filter to true
   if (rightButtonState && !rightPrevButtonState)
   {
     filteredRightButton = true;
-    Serial.println("[INPUT] Right button pressed.");
   }
 
   // Sets the previous button states for the next time input() is called
@@ -422,5 +422,6 @@ boolean isRightButton()
 {
   boolean toReturn = filteredRightButton;
   filteredRightButton = false;
+  if (toReturn) Serial.println("[INPUT] Right button pressed.");
   return toReturn; 
 }
