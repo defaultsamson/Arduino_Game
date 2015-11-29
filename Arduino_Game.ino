@@ -13,10 +13,10 @@ int buttonPin = 18; // The pin assigned to the button input
 int piezoPin = 19; // The pin assigned to the button input
  
  // Instanciates the pin assigned to each pixel
-int pixelPin[] = {8, 4, 2, 14,
-                  9, 5, 3, 15,
-                  10, 6, 12, 16,
-                  11, 7, 13, 17};
+int pixelPin[] = {10, 6, 2, 14,
+                  11, 7, 3, 15,
+                  12, 8, 4, 16,
+                  13, 9, 5, 17};
 
 // Instanciates the pixel data pixels and their states 
 boolean pixelData[] = {false, false, false, false,
@@ -53,7 +53,7 @@ int playerX = 2; // The player's x ordinate (defaults to 2 when game first start
 boolean isDead = false; // Tells whether the player has died or not
 boolean isWin = false; // Tells whether the player has won the level or not
 
-int currentLevel = 2; // The current level that the player is on
+int currentLevel = 1; // The current level that the player is on
 boolean levelInit = true; // If program should initialize the variables using for tick to the new currentLevel's settings 
 
 int blockDropInterval; // The amount of ticks to wait before dropping a block
@@ -107,10 +107,10 @@ void loop()
   }
 
   // Renders at constant frequency separate from tick 
-  if ((lastTick + (1000 / renderFrequency)) < currentTime)
+  if ((lastRender + (1000 / renderFrequency)) < currentTime)
   { 
     render();
-
+  
     lastRender = currentTime; // Saves the current system time of this render for next loop's reference
   }
 }
@@ -130,6 +130,8 @@ void tick()
     // Initializes the variables for each level based on their difficulty
     if (levelInit)
     {
+      Serial.print("[GAME] Initializing Level ");
+      Serial.println(currentLevel);
       score = 0;
       
       if (currentLevel == 1)
@@ -432,6 +434,11 @@ void input()
 {
   int input = analogRead(buttonPin);
 
+  Serial.println(input);
+  
+  leftButtonState = false;
+  rightButtonState = false;
+      
   // Gets the raw data for which buttons are pressed
   if (input <= inputIntervals[0])
   {
