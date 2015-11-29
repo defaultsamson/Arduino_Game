@@ -1,6 +1,3 @@
-int leftButtonPin = 3; // The pin assigned to the left button
-int rightButtonPin = 2; // The pin assigned to the right button
-
 /*
  * Analogue pin legend
  * 
@@ -11,21 +8,23 @@ int rightButtonPin = 2; // The pin assigned to the right button
  * Pin 18 = Analog in 4
  * Pin 19 = Analog in 5
  */
+
+int buttonPin = 18; // The pin assigned to the button input
+int piezoPin = 19; // The pin assigned to the button input
+ 
  // Instanciates the pin assigned to each pixel
-int pixelPin[] = {10, 6, 5, 16,
-                  11, 7, 4, 17,
-                  12, 8, 14, 18,
-                  13, 9, 15, 19};
+int pixelPin[] = {8, 4, 2, 14,
+                  9, 5, 3, 15,
+                  10, 6, 12, 16,
+                  11, 7, 13, 17};
 
 // Instanciates the pixel data pixels and their states 
 boolean pixelData[] = {false, false, false, false,
                        false, false, false, false,
                        false, false, false, false,
                        false, false, false, false};
-int pixelCount = 16;
+int pixelCount = 16; // The total amount of pixels
 
-int tickInterval= 1000 / 30; // Interval between each tick (1000ms / 30 Hz)
-long lastTick = 0; // The millisecond time of the previous tick
 
 boolean leftButtonState = false; // The left button state
 boolean leftPrevButtonState = true; // The left button's previous state (true to prevent program from thinking button was pushed at beginning)
@@ -35,18 +34,21 @@ boolean rightButtonState = false; // The right button state
 boolean rightPrevButtonState = true; // The right button's previous state (true to prevent program from thinking button was pushed at beginning)
 boolean filteredRightButton = false; // A filtered output of the right button
 
+int biv[] = {258, 327, 558, 1023}; // Button in values. The raw analogRead() for each combination of button presses
+int inputIntervals[] = {biv[0] + ((biv[1] - biv[0]) / 2), biv[1] + ((biv[2] - biv[1]) / 2), biv[2] + ((biv[3] - biv[2]) / 2), biv[3]};
+
+
+int tickFrequency = 30; // Frequency of the ticks in Hz
+long lastTick = 0; // The millisecond time of the previous tick
+
+int renderFrequency = 30; // Frequency of the render in Hz
+long lastRender = 0; // The millisecond time of the previous render
+
 long currentTime; // The current time in milliseconds (sets variable at beginning of each tick)
-
 int currentTick = 0; // The current tick (starts at 0)
-
-int blockDropInterval; // The amount of ticks to wait before dropping a block
 
 int playerX = 2; // The player's x ordinate (defaults to 2 when game first starts)
                  // CANNOT GO BELOW 1 OR ABOVE 4
-
-int blockX[] = {0, 0, 0, 0, 0, 0, 0, 0};
-int blockY[] = {0, 0, 0, 0, 0, 0, 0, 0};
-int blockLength = 8;
 
 boolean isDead = false; // Tells whether the player has died or not
 boolean isWin = false; // Tells whether the player has won the level or not
@@ -54,229 +56,287 @@ boolean isWin = false; // Tells whether the player has won the level or not
 int currentLevel = 2; // The current level that the player is on
 boolean levelInit = true; // If program should initialize the variables using for tick to the new currentLevel's settings 
 
-int MAX_SCORE = 150; // The score a player has to reach to beat the level
-int score = 0; // The current score of the player
-int displayScore = 0; // The display score for the end LED's
+int blockDropInterval; // The amount of ticks to wait before dropping a block
+int blockDropChangeInterval; // The amount of ticks to wait before subtracting the blockDropInterval by 1
+int blockDropMin; // The minimum blockDropInterval value
+
+int blockProgressInterval; // The amount of ticks to wait before dropping a block
+int blockProgressChangeInterval; // The amount of ticks to wait before subtracting the blockDropInterval by 1
+int blockProgressMin; // The minimum blockDropInterval value
+
+int tickFrequencyChangeInterval = 30;
+int tickFrequencyMin = 10;
+
+int MAX_SCORE; // The score a player has to reach to beat the level
+int score; // The current score of the player
+int displayScore; // The display score for the end LED's
+
+// The coordinates of the blocks
+int blockX[] = {0, 0, 0, 0, 0, 0, 0, 0};
+int blockY[] = {0, 0, 0, 0, 0, 0, 0, 0};
+int blockLength = 8;
 
 void setup() 
 {
   Serial.begin(9600);
 
   // Sets up the pins
-  pinMode(leftButtonPin, INPUT);
-  pinMode(rightButtonPin, INPUT);
+  pinMode(buttonPin, INPUT);
+  pinMode(piezoPin, OUTPUT);
 
   // Sets all the pins attatched to pixels to output
   for (int i = 0; i < pixelCount; i++)
   {
     pinMode(pixelPin[i], OUTPUT); 
   }
-  
-  clearPixels(); // Sets all the pixel states to false
 }
 
 void loop() 
 {
   currentTime = millis();
 
-  // Constantly updates input for better responsiveness
+  // Updates constantly for better responsiveness
   input();
   
   // Limits tick and render methods to only run at the speed of the tickInterval (currently 30Hz)
-  if ((lastTick + tickInterval) < currentTime)
+  if ((lastTick + (1000 / tickFrequency)) < currentTime)
   { 
-    if (isWin) // If the player won the level
-    {
-      
-    }
-    else if (isDead) // If the player is dead
-    {
-      
-    }
-    else // Else, the player must still be in-game
-    {
-      tick();
-      render();
-    }
+    tick();
     
-    lastTick = currentTime; // Saves the current system time of this tick for next tick's reference
+    lastTick = currentTime; // Saves the current system time of this tick for next loop's reference
+  }
+
+  // Renders at constant frequency separate from tick 
+  if ((lastTick + (1000 / renderFrequency)) < currentTime)
+  { 
+    render();
+
+    lastRender = currentTime; // Saves the current system time of this render for next loop's reference
   }
 }
 
 void tick()
 {
-  // Initializes the variables for each level based on their difficulty
-  if (levelInit)
+  if (isWin) // If the player won the level
   {
-    if (currentLevel == 1)
-    {
-      blockDropInterval = 60;
-    }
-    else if (currentLevel == 2)
-    {
-      blockDropInterval = 180;
-    }
-    else
-    {
-      blockDropInterval = 10;
-      Serial.println("[ERROR] Level variables could not be initialized.");
-      Serial.println("[ERROR] Reason: currentLevel is out of bounds.");
-    }
-
-    levelInit = false;
+    
   }
-  
-  // Moves the player back and forth based on input, and whether they're in the bounds of the screen or not
-  if (isLeftButton() && playerX > 1)
+  else if (isDead) // If the player is dead
   {
-    playerX--;
-    Serial.print("[PLAYER] Moving player to (");
-    Serial.print(playerX);
-    Serial.println(", 1)");
+    
   }
-  if (isRightButton() && playerX < 4)
+  else // Else, the player must still be in-game
   {
-    playerX++;
-    Serial.print("[PLAYER] Moving player to (");
-    Serial.print(playerX);
-    Serial.println(", 1)");
-  }
-  
-  // Progress the blocks at twice the speed of the drop interval
-  if (currentTick % (blockDropInterval / 4) == 0)
-  {
-    for (int i = 0; i < blockLength; i++)
+    // Initializes the variables for each level based on their difficulty
+    if (levelInit)
     {
-      blockY[i] -= 1;
-    }
-  }
-
-  // Spawns blocks each interval
-  if (currentTick % blockDropInterval == 0) // TODO doesn't always spawn shapes for some reason. Make more reliable
-  {
-    score++; // Give the player a point each block drop
-
-    if (currentLevel == 1) // First level, single blocks
-    {
-      int xOrd = random(4) + 1;
-
-      // Spawn block at top of the screen at a random x ordinate
-      spawnBlock(xOrd, 4);
-    }
-    else if (currentLevel == 2) // Second level, shapes
-    {
-      int shape = random(9) + 1; // Selects randomly between the shape cases
-
-      int xOffset = random(4) + 1; // Generates the main segment of a shape with a random offset
+      score = 0;
       
-      switch (shape) // Random shape generation
+      if (currentLevel == 1)
       {
-        // [][]
-        //   []
-        //   []
-        case 1: 
-          spawnBlock(xOffset, 4);
-          spawnBlock(xOffset, 5);
-          spawnBlock(xOffset, 6);
-          spawnBlock(xOffset - 1, 6);
-          break;
+        MAX_SCORE = 120;
+        
+        blockDropInterval = 60;
+        blockDropChangeInterval = 100;
+        blockDropMin = 20;
 
-        // [][]
-        // []
-        // []
-        case 2:
-          spawnBlock(xOffset, 4);
-          spawnBlock(xOffset, 5);
-          spawnBlock(xOffset, 6);
-          spawnBlock(xOffset + 1, 6);
-          break;
-
-        // [][]
-        // [][]
-        case 3:
-          spawnBlock(xOffset, 4);
-          spawnBlock(xOffset + 1, 4);
-          spawnBlock(xOffset, 5);
-          spawnBlock(xOffset + 1, 5);
-          break;
-
-        //   []
-        // [][][]
-        case 4:
-          spawnBlock(xOffset - 1, 4);
-          spawnBlock(xOffset, 4);
-          spawnBlock(xOffset + 1, 4);
-          spawnBlock(xOffset, 5);
-          break;
-
-        // [][][]
-        //   []
-        case 5:
-          spawnBlock(xOffset - 1, 5);
-          spawnBlock(xOffset, 5);
-          spawnBlock(xOffset + 1, 5);
-          spawnBlock(xOffset, 4);
-          break;
-
-        //   [][]
-        // [][]
-        case 6:
-          spawnBlock(xOffset - 1, 4);
-          spawnBlock(xOffset, 4);
-          spawnBlock(xOffset, 5);
-          spawnBlock(xOffset + 1, 5);
-          break;
-
-        // [][]
-        //   [][]
-        case 7:
-          spawnBlock(xOffset - 1, 5);
-          spawnBlock(xOffset, 5);
-          spawnBlock(xOffset, 4);
-          spawnBlock(xOffset + 1, 4);
-          break;
-
-        // []
-        // []
-        // []
-        // []
-        case 8: // Two cases because it has twice the chance of spawning
-        case 9:
-          spawnBlock(xOffset, 4);
-          spawnBlock(xOffset, 5);
-          spawnBlock(xOffset, 6);
-          spawnBlock(xOffset, 7);
-          break;
+        blockProgressInterval = 15;
+        blockProgressChangeInterval = 140;
+        blockProgressMin = 5;
+      }
+      else if (currentLevel == 2)
+      {
+        blockDropInterval = 180;
+      }
+      else
+      {
+        Serial.println("[ERROR] Level variables could not be initialized.");
+        Serial.println("[ERROR] Reason: currentLevel is out of bounds.");
+      }
+  
+      levelInit = false;
+    }
+  
+    // Moves the player back and forth based on input, and whether they're in the bounds of the screen or not
+    if (isLeftButton() && playerX > 1)
+    {
+      playerX--;
+      Serial.print("[PLAYER] Moving player to (");
+      Serial.print(playerX);
+      Serial.println(", 1)");
+    }
+    if (isRightButton() && playerX < 4)
+    {
+      playerX++;
+      Serial.print("[PLAYER] Moving player to (");
+      Serial.print(playerX);
+      Serial.println(", 1)");
+    }
+    
+    // Progress the blocks
+    if (currentTick % blockProgressInterval == 0)
+    {
+      for (int i = 0; i < blockLength; i++)
+      {
+        blockY[i] -= 1;
       }
     }
-    else // Boss level
+  
+    // Spawns blocks each interval
+    if (currentTick % blockDropInterval == 0) // TODO doesn't always spawn shapes for some reason. Make more reliable
     {
-      
+      score++; // Give the player a point each block drop
+  
+      if (currentLevel == 1) // First level, single blocks
+      {
+        int xOrd = random(4) + 1;
+  
+        // Spawn block at top of the screen at a random x ordinate
+        spawnBlock(xOrd, 4);
+      }
+      else if (currentLevel == 2) // Second level, shapes
+      {
+        int shape = random(9) + 1; // Selects randomly between the shape cases
+  
+        int xOffset = random(4) + 1; // Generates the main segment of a shape with a random offset
+        
+        switch (shape) // Random shape generation
+        {
+          // [][]
+          //   []
+          //   []
+          case 1: 
+            spawnBlock(xOffset, 4);
+            spawnBlock(xOffset, 5);
+            spawnBlock(xOffset, 6);
+            spawnBlock(xOffset - 1, 6);
+            break;
+  
+          // [][]
+          // []
+          // []
+          case 2:
+            spawnBlock(xOffset, 4);
+            spawnBlock(xOffset, 5);
+            spawnBlock(xOffset, 6);
+            spawnBlock(xOffset + 1, 6);
+            break;
+  
+          // [][]
+          // [][]
+          case 3:
+            spawnBlock(xOffset, 4);
+            spawnBlock(xOffset + 1, 4);
+            spawnBlock(xOffset, 5);
+            spawnBlock(xOffset + 1, 5);
+            break;
+  
+          //   []
+          // [][][]
+          case 4:
+            spawnBlock(xOffset - 1, 4);
+            spawnBlock(xOffset, 4);
+            spawnBlock(xOffset + 1, 4);
+            spawnBlock(xOffset, 5);
+            break;
+  
+          // [][][]
+          //   []
+          case 5:
+            spawnBlock(xOffset - 1, 5);
+            spawnBlock(xOffset, 5);
+            spawnBlock(xOffset + 1, 5);
+            spawnBlock(xOffset, 4);
+            break;
+  
+          //   [][]
+          // [][]
+          case 6:
+            spawnBlock(xOffset - 1, 4);
+            spawnBlock(xOffset, 4);
+            spawnBlock(xOffset, 5);
+            spawnBlock(xOffset + 1, 5);
+            break;
+  
+          // [][]
+          //   [][]
+          case 7:
+            spawnBlock(xOffset - 1, 5);
+            spawnBlock(xOffset, 5);
+            spawnBlock(xOffset, 4);
+            spawnBlock(xOffset + 1, 4);
+            break;
+  
+          // []
+          // []
+          // []
+          // []
+          case 8: // Two cases because it has twice the chance of spawning
+          case 9:
+            spawnBlock(xOffset, 4);
+            spawnBlock(xOffset, 5);
+            spawnBlock(xOffset, 6);
+            spawnBlock(xOffset, 7);
+            break;
+        }
+      }
+      else // Boss level
+      {
+        
+      }
+    }
+  
+    // Every specified ticks, make the block interval faster if it is above the minimum interval rate
+    if (currentTick % blockDropChangeInterval == 0 && blockDropInterval > blockDropMin)
+    {
+      blockDropInterval--;
+    }
+
+    // Every specified ticks, make the block interval faster if it is above the minimum interval rate
+    if (currentTick % blockProgressChangeInterval == 0 && blockProgressInterval > blockProgressMin)
+    {
+      blockProgressInterval--;
+    }
+
+    // Every specified ticks, make the tick interval faster if it is above the minimum interval rate
+    if (currentTick % tickFrequencyChangeInterval == 0 && tickFrequency > tickFrequency)
+    {
+      tickFrequency--;
+    }
+  
+    // If the player's score is greater than that required to win the level
+    if (score >= MAX_SCORE)
+    {
+      win();
+    }
+    
+    // Detects collision with player
+    for (int i = 0; i < blockLength; i++)
+    {
+      if (playerX == blockX[i] && blockY[i] == 1)
+      {
+        dead();
+      }
     }
   }
-
-  // Every 100 ticks, make the block interval faster if it is above a specified maximum rate (in this case, 20)
-  if (currentTick % 100 == 0 && blockDropInterval > 20) // TODO Make specified maximum rate a level variable, and make separate variable for rate of change instead of using 100
-  {
-    blockDropInterval--;
-  }
-
-  // If the player's score is greater than that required to win the level
-  if (score >= MAX_SCORE)
-  {
-    win();
-  }
-  
-  // Detects collision with player
-  for (int i = 0; i < blockLength; i++)
-  {
-    if (playerX == blockX[i] && blockY[i] == 1)
-    {
-      dead();
-    }
-  }
-  
   currentTick++;
+}
+
+void dead()
+{
+  Serial.println("[GAME] Player has died.");
+  isDead = true;
+  levelInit = true;
+}
+
+void win()
+{
+  Serial.print("[GAME] Player has completed level ");
+  Serial.print(currentLevel);
+  Serial.println(".");
+  isWin = true;
+  levelInit = true;
+  currentLevel++;
 }
 
 // Spawns a block at the given coordinates
@@ -300,23 +360,6 @@ void spawnBlock(int x, int y)
   Serial.print(", ");
   Serial.print(y);
   Serial.println(")");
-}
-
-void dead()
-{
-  Serial.println("[GAME] Player has died.");
-  isDead = true;
-  levelInit = true;
-}
-
-void win()
-{
-  Serial.print("[GAME] Player has completed level ");
-  Serial.print(currentLevel);
-  Serial.println(".");
-  isWin = true;
-  levelInit = true;
-  currentLevel++;
 }
 
 // Draws all the objects to screen
@@ -385,24 +428,37 @@ void renderToHardware()
   }
 }
 
-void input()
+void input() 
 {
-  // Updates the button states
-  leftButtonState = (digitalRead(leftButtonPin) == HIGH);
-  rightButtonState = (digitalRead(rightButtonPin) == HIGH);
+  int input = analogRead(buttonPin);
 
+  // Gets the raw data for which buttons are pressed
+  if (input <= inputIntervals[0])
+  {
+    leftButtonState = true;
+    rightButtonState = true;
+  }
+  else if (input <= inputIntervals[1])
+  {
+    leftButtonState = true;
+  }
+  else if (input <= inputIntervals[2])
+  {
+    rightButtonState = true;
+  }
+  
   // If the button was just pressed then set the filter to true
   if (leftButtonState && !leftPrevButtonState)
   {
     filteredLeftButton = true;
-    Serial.println("[INPUT] Left button pressed.");
+    //Serial.println("[INPUT] Left button pressed.");
   }
 
   // If the button was just pressed then set the filter to true
   if (rightButtonState && !rightPrevButtonState)
   {
     filteredRightButton = true;
-    Serial.println("[INPUT] Right button pressed.");
+    //Serial.println("[INPUT] Right button pressed.");
   }
 
   // Sets the previous button states for the next time input() is called
