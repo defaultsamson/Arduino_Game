@@ -13,10 +13,10 @@ int buttonPin = 18; // The pin assigned to the button input
 int piezoPin = 19; // The pin assigned to the button input
 
 // Instanciates the pin assigned to each pixel
-int pixelPin[] = {10, 6, 2, 14,
-                  11, 7, 3, 15,
-                  12, 8, 4, 16,
-                  13, 9, 5, 17};
+int pixelPin[] = {13, 9, 2, 17,
+                  12, 8, 3, 16,
+                  11, 7, 4, 15,
+                  10, 6, 5, 14};
 
 // Instanciates the pixel data pixels and their states
 boolean pixelData[] = {false, false, false, false,
