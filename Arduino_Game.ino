@@ -13,10 +13,11 @@ int buttonPin = 18; // The pin assigned to the button input
 int piezoPin = 19; // The pin assigned to the button input
 
 // Instanciates the pin assigned to each pixel
-int pixelPin[] = {13, 9, 2, 17,
-                  12, 8, 3, 16,
-                  11, 7, 4, 15,
-                  10, 6, 5, 14};
+int pixelPin[] = {14, 5, 6, 10,
+                  15, 4, 7, 11,
+                  16, 3, 8, 12,
+                  17, 2, 9, 13};
+
 
 // Instanciates the pixel data pixels and their states
 boolean pixelData[] = {false, false, false, false,
@@ -35,7 +36,7 @@ boolean rightButtonState = false; // The right button state
 boolean rightPrevButtonState = true; // The right button's previous state (true to prevent program from thinking button was pushed at beginning)
 boolean filteredRightButton = false; // A filtered output of the right button
 
-int biv[] = {258, 327, 558, 1023}; // Button in values. The raw analogRead() for each combination of button presses
+int biv[] = {258, 327, 558, 1023}; // Button in values (the raw analogRead() for each combination of button presses)
 int inputIntervals[] = {biv[0] + ((biv[1] - biv[0]) / 2), biv[1] + ((biv[2] - biv[1]) / 2), biv[2] + ((biv[3] - biv[2]) / 2), biv[3]};
 
 
@@ -48,25 +49,19 @@ long lastRender = 0; // The millisecond time of the previous render
 long currentTime; // The current time in milliseconds (sets variable at beginning of each tick)
 int currentTick = 0; // The current tick (starts at 0)
 
-int playerX = 2; // The player's x ordinate (defaults to 2 when game first starts)
-// CANNOT GO BELOW 1 OR ABOVE 4
+int playerX = 2; // The player's x ordinate (defaults to 2 when game first starts) CANNOT GO BELOW 1 OR ABOVE 4
 
 boolean isDead = false; // Tells whether the player has died or not
 boolean isWin = false; // Tells whether the player has won the level or not
 
-int currentLevel = 1; // The current level that the player is on
+int currentLevel = 2; // The current level that the player is on
 boolean levelInit = true; // If program should initialize the variables using for tick to the new currentLevel's settings
 
 int blockDropInterval; // The amount of ticks to wait before dropping a block
-int blockDropChangeInterval; // The amount of ticks to wait before subtracting the blockDropInterval by 1
-int blockDropMin; // The minimum blockDropInterval value
-
 int blockProgressInterval; // The amount of ticks to wait before dropping a block
-int blockProgressChangeInterval; // The amount of ticks to wait before subtracting the blockDropInterval by 1
-int blockProgressMin; // The minimum blockDropInterval value
 
-int tickFrequencyChangeInterval = 30;
-int tickFrequencyMin = 10;
+int tickFrequencyChangeInterval;
+int tickFrequencyMin;
 
 int MAX_SCORE; // The score a player has to reach to beat the level
 int score; // The current score of the player
@@ -140,16 +135,20 @@ void tick()
         MAX_SCORE = 120;
 
         blockDropInterval = 60;
-        blockDropChangeInterval = 100;
-        blockDropMin = 20;
-
         blockProgressInterval = 15;
-        blockProgressChangeInterval = 140;
-        blockProgressMin = 5;
+
+        tickFrequencyChangeInterval = 60;
+        tickFrequencyMin = 10;
       }
       else if (currentLevel == 2)
       {
-        blockDropInterval = 180;
+        MAX_SCORE = 120;
+
+        blockDropInterval = 60;
+        blockProgressInterval = 15;
+
+        tickFrequencyChangeInterval = 60;
+        tickFrequencyMin = 10;
       }
       else
       {
@@ -186,7 +185,7 @@ void tick()
     }
 
     // Spawns blocks each interval
-    if (currentTick % blockDropInterval == 0) // TODO doesn't always spawn shapes for some reason. Make more reliable
+    if (currentTick % blockDropInterval == 0)
     {
       score++; // Give the player a point each block drop
 
@@ -285,24 +284,21 @@ void tick()
       }
       else // Boss level
       {
+        int xOrd = random(4) + 1;
 
+        // Spawn block at top of the screen at a random x ordinate
+        spawnBlock(xOrd - 3, 4);
+        spawnBlock(xOrd - 2, 4);
+        spawnBlock(xOrd - 1, 4);
+        spawnBlock(xOrd + 1, 4);
+        spawnBlock(xOrd + 2, 4);
+        spawnBlock(xOrd + 3, 4);
       }
     }
 
-    // Every specified ticks, make the block interval faster if it is above the minimum interval rate
-    if (currentTick % blockDropChangeInterval == 0 && blockDropInterval > blockDropMin)
-    {
-      blockDropInterval--;
-    }
-
-    // Every specified ticks, make the block interval faster if it is above the minimum interval rate
-    if (currentTick % blockProgressChangeInterval == 0 && blockProgressInterval > blockProgressMin)
-    {
-      blockProgressInterval--;
-    }
-
+    // TODO Move outside of tick loop so the speed increase isn't exponential
     // Every specified ticks, make the tick interval faster if it is above the minimum interval rate
-    if (currentTick % tickFrequencyChangeInterval == 0 && tickFrequency > tickFrequency)
+    if (currentTick % tickFrequencyChangeInterval == 0 && tickFrequency > tickFrequencyMin)
     {
       tickFrequency--;
     }
@@ -342,14 +338,22 @@ void win()
   currentLevel++;
 }
 
+boolean isOffScreen(int x, int y)
+{
+  return (y < 1 || x < 1 || x > 4);
+}
+
 // Spawns a block at the given coordinates
 void spawnBlock(int x, int y)
 {
+  // Don't bother running any code if the block being spawned is off screen
+  if (isOffScreen(x, y)) return;
+
   for (int i = 0; i < blockLength; i++)
   {
     // Chooses a block that is off screen below it, or off side to the left or right
     // NOT FROM ABOVE because those blocks will progress onto the screen eventually
-    if (blockY[i] < 1 || blockX[i] < 1 || blockX[i] > 4)
+    if (isOffScreen(blockX[i], blockY[i]))
     {
       blockX[i] = x;
       blockY[i] = y;
@@ -390,7 +394,7 @@ void clearPixels()
   }
 }
 
-// Sets a pixel at the given coordinate to be drawn.
+// Sets a pixel at the given coordinate to be drawn
 void drawPixel(int x, int y)
 {
   // converts coords parameters from bottom left from 1-4
@@ -489,3 +493,4 @@ boolean isRightButton()
   filteredRightButton = false;
   return toReturn;
 }
+
