@@ -18,14 +18,11 @@ int pixelPin[] = {14, 5, 6, 10,
                   16, 3, 8, 12,
                   17, 2, 9, 13};
 
-
 // Instanciates the pixel data pixels and their states
 boolean pixelData[] = {false, false, false, false,
                        false, false, false, false,
                        false, false, false, false,
                        false, false, false, false};
-
-int pixelCount = 16; // The total amount of pixels
 
 
 boolean leftButtonState = false; // The left button state
@@ -36,7 +33,7 @@ boolean rightButtonState = false; // The right button state
 boolean rightPrevButtonState = true; // The right button's previous state (true to prevent program from thinking button was pushed at beginning)
 boolean filteredRightButton = false; // A filtered output of the right button
 
-int biv[] = {258, 327, 558, 1023}; // Button in values (the raw analogRead() for each combination of button presses)
+int biv[] = {262, 329, 572, 1023}; // Button in values (the raw analogRead() for each combination of button presses)
 int inputIntervals[] = {biv[0] + ((biv[1] - biv[0]) / 2), biv[1] + ((biv[2] - biv[1]) / 2), biv[2] + ((biv[3] - biv[2]) / 2), biv[3]};
 
 
@@ -51,17 +48,18 @@ int currentTick = 0; // The current tick (starts at 0)
 
 int playerX = 2; // The player's x ordinate (defaults to 2 when game first starts) CANNOT GO BELOW 1 OR ABOVE 4
 
+boolean isMenu = true; // Tells whether the player is in the main menu or not
 boolean isDead = false; // Tells whether the player has died or not
 boolean isWin = false; // Tells whether the player has won the level or not
 
-int currentLevel = 2; // The current level that the player is on
+int currentLevel = 1; // The current level that the player is on
 boolean levelInit = true; // If program should initialize the variables using for tick to the new currentLevel's settings
 
 int blockDropInterval; // The amount of ticks to wait before dropping a block
 int blockProgressInterval; // The amount of ticks to wait before dropping a block
 
 int tickFrequencyChangeInterval;
-int tickFrequencyMin;
+int tickFrequencyMax;
 
 int MAX_SCORE; // The score a player has to reach to beat the level
 int score; // The current score of the player
@@ -74,14 +72,12 @@ int blockLength = 8;
 
 void setup()
 {
-  Serial.begin(9600);
-
   // Sets up the pins
   pinMode(buttonPin, INPUT);
   pinMode(piezoPin, OUTPUT);
 
   // Sets all the pins attatched to pixels to output
-  for (int i = 0; i < pixelCount; i++)
+  for (int i = 0; i < sizeof(pixelData); i++)
   {
     pinMode(pixelPin[i], OUTPUT);
   }
@@ -93,6 +89,7 @@ void loop()
 
   // Updates constantly for better responsiveness
   input();
+  music(currentTime);
 
   // Limits tick and render methods to only run at the speed of the tickInterval (currently 30Hz)
   if ((lastTick + (1000 / tickFrequency)) < currentTime)
@@ -111,15 +108,61 @@ void loop()
   }
 }
 
+int menuLeft = 0;
+int menuRight = 0;
+
+int garbage = 10;
+
 void tick()
 {
-  if (isWin) // If the player won the level
+  if (isMenu)
   {
+    if (menuLeft + menuRight == 4)
+    {
+      menuLeft = 0;
+      menuRight = 0;
+      isMenu = false;
+    }
 
+    //tone(piezoPin, garbage);
+
+    if (currentTick % 20 == 0)
+    {
+      if (isLeftButtonUnfil())
+      {
+        if (menuLeft < 2) menuLeft++;
+      }
+      else
+      {
+        if (menuLeft > 0) menuLeft--;
+      }
+
+      if (isRightButtonUnfil())
+      {
+        if (menuRight < 2) menuRight++;
+      }
+      else
+      {
+        if (menuRight > 0) menuRight--;
+      }
+    }
+  }
+  else if (isWin) // If the player won the level
+  {
+    Serial.print("[GAME] Player has completed level ");
+    Serial.print(currentLevel);
+    Serial.println(".");
+    levelInit = true;
+    currentLevel++;
+    isWin = false;
   }
   else if (isDead) // If the player is dead
   {
-
+    Serial.println("[GAME] Player has died.");
+    levelInit = true;
+    currentLevel = 1;
+    isDead = false;
+    isMenu = true;
   }
   else // Else, the player must still be in-game
   {
@@ -129,26 +172,41 @@ void tick()
       Serial.print("[GAME] Initializing Level ");
       Serial.println(currentLevel);
       score = 0;
+      playerX = 2;
+      clearBlocks();
 
       if (currentLevel == 1)
       {
-        MAX_SCORE = 120;
+        MAX_SCORE = 80;
 
-        blockDropInterval = 60;
+        blockDropInterval = 30;
         blockProgressInterval = 15;
 
         tickFrequencyChangeInterval = 60;
-        tickFrequencyMin = 10;
+        tickFrequency = 30;
+        tickFrequencyMax = 60;
       }
       else if (currentLevel == 2)
       {
-        MAX_SCORE = 120;
+        MAX_SCORE = 40;
 
         blockDropInterval = 60;
         blockProgressInterval = 15;
 
         tickFrequencyChangeInterval = 60;
-        tickFrequencyMin = 10;
+        tickFrequency = 30;
+        tickFrequencyMax = 60;
+      }
+      else if (currentLevel == 3)
+      {
+        MAX_SCORE = 20;
+
+        blockDropInterval = 60;
+        blockProgressInterval = 15;
+
+        tickFrequencyChangeInterval = 60;
+        tickFrequency = 30;
+        tickFrequencyMax = 60;
       }
       else
       {
@@ -273,12 +331,17 @@ void tick()
           // []
           // []
           // []
-          case 8: // Two cases because it has twice the chance of spawning
+          case 8: // Cannot have on the sides else game could potentially be impossible
+            spawnBlock(2, 4);
+            spawnBlock(2, 5);
+            spawnBlock(2, 6);
+            spawnBlock(2, 7);
+            break;
           case 9:
-            spawnBlock(xOffset, 4);
-            spawnBlock(xOffset, 5);
-            spawnBlock(xOffset, 6);
-            spawnBlock(xOffset, 7);
+            spawnBlock(3, 4);
+            spawnBlock(3, 5);
+            spawnBlock(3, 6);
+            spawnBlock(3, 7);
             break;
         }
       }
@@ -298,15 +361,15 @@ void tick()
 
     // TODO Move outside of tick loop so the speed increase isn't exponential
     // Every specified ticks, make the tick interval faster if it is above the minimum interval rate
-    if (currentTick % tickFrequencyChangeInterval == 0 && tickFrequency > tickFrequencyMin)
+    if (currentTick % tickFrequencyChangeInterval == 0 && tickFrequency < tickFrequencyMax)
     {
-      tickFrequency--;
+      tickFrequency++;
     }
 
     // If the player's score is greater than that required to win the level
     if (score >= MAX_SCORE)
     {
-      win();
+      isWin = true;
     }
 
     // Detects collision with player
@@ -314,28 +377,68 @@ void tick()
     {
       if (playerX == blockX[i] && blockY[i] == 1)
       {
-        dead();
+        isDead = true;
       }
     }
   }
   currentTick++;
 }
 
-void dead()
+int currentSong = 1;
+
+String songTone1[] = {"C4", "C4#", "B5", "G5", "F4"};
+int songDuration1[] = {1, 1, 2, 2, 1};
+int bpm1 = 120;
+
+String* songTones[] = {songTone1};
+int* songDurations[] = {songDuration1};
+int songBpm[] = {bpm1};
+
+int toPlayNoteIndex = 0;
+
+int lastTime = 0;
+
+void music(long currentTime)
 {
-  Serial.println("[GAME] Player has died.");
-  isDead = true;
-  levelInit = true;
+  int lastDuration = 0;
+  
+  if (toPlayNoteIndex > 0) // If the first note has been played, play the next note after the original note is finished. Else play immediately
+  {
+    int noteDuration = songDurations[currentSong][toPlayNoteIndex - 1];
+    lastDuration = 60000 / songBpm[currentSong] / noteDuration;
+  }
+
+  // If the last note is done playing
+  if (currentTime > (lastTime + lastDuration) && toPlayNoteIndex < 5)
+  {
+    lastTime = currentTime;
+    
+    // Play the next note in the current song
+    int duration = 60000 / songBpm[currentSong] / songDurations[currentSong][toPlayNoteIndex];
+    String noteTone = songTones[currentSong][toPlayNoteIndex];
+    playNote(noteTone, duration);
+    toPlayNoteIndex++;
+  }
 }
 
-void win()
+String notes[] = {"C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4",
+                  "C5", "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5",
+                  "C6", "C6#", "D6", "D6#", "E6", "F6", "F6#", "G6", "G6#", "A6", "A6#", "B6",};
+int tones[] = {262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494,
+               523, 554, 587, 622, 695, 698, 740, 784, 831, 880, 932, 988,
+               1046, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976};
+
+void playNote(String note, int duration)
 {
-  Serial.print("[GAME] Player has completed level ");
-  Serial.print(currentLevel);
-  Serial.println(".");
-  isWin = true;
-  levelInit = true;
-  currentLevel++;
+  // play the tone corresponding to the note name
+  for (int i = 0; i < sizeof(notes); i++)
+  {
+    if (note == notes[i])
+    {
+      tone(piezoPin, tones[i], duration);
+      return;
+    }
+  }
 }
 
 boolean isOffScreen(int x, int y)
@@ -369,26 +472,78 @@ void spawnBlock(int x, int y)
   Serial.println(")");
 }
 
+// Moves all the blocks off screen
+void clearBlocks()
+{
+  for (int i = 0; i < blockLength; i++)
+  {
+    blockX[i] = 0;
+    blockY[i] = 0;
+  }
+}
+
 // Draws all the objects to screen
 void render()
 {
   clearPixels(); // Clears all the display data
 
-  drawPixel(playerX, 1); // Player is always on the 1st layer
-
-  // Draws all the blocks to screen
-  for (int i = 0; i < blockLength; i++)
+  if (isMenu)
   {
-    drawPixel(blockX[i], blockY[i]);
-  }
+    switch (menuLeft)
+    {
+      case 2:
+        drawPixel(2, 1);
+        drawPixel(2, 2);
+        drawPixel(2, 3);
+        drawPixel(2, 4);
+      case 1:
+        drawPixel(1, 1);
+        drawPixel(1, 2);
+        drawPixel(1, 3);
+        drawPixel(1, 4);
+        break;
+    }
 
+    switch (menuRight)
+    {
+      case 2:
+        drawPixel(3, 1);
+        drawPixel(3, 2);
+        drawPixel(3, 3);
+        drawPixel(3, 4);
+      case 1:
+        drawPixel(4, 1);
+        drawPixel(4, 2);
+        drawPixel(4, 3);
+        drawPixel(4, 4);
+        break;
+    }
+  }
+  else if (isDead)
+  {
+
+  }
+  else if (isWin)
+  {
+
+  }
+  else // In-game
+  {
+    drawPixel(playerX, 1); // Player is always on the 1st layer
+
+    // Draws all the blocks to screen
+    for (int i = 0; i < blockLength; i++)
+    {
+      drawPixel(blockX[i], blockY[i]);
+    }
+  }
   renderToHardware(); // Renders the draws data to the LED's
 }
 
 // Sets all the pixel data to false
 void clearPixels()
 {
-  for (int i = 0; i < pixelCount; i++)
+  for (int i = 0; i < sizeof(pixelData); i++)
   {
     pixelData[i] = false;
   }
@@ -406,14 +561,14 @@ void drawPixel(int x, int y)
   int index = (newY * 4) + newX;
 
   // Prevents out of bound pixelData indexes
-  if (index >= 0 && index < pixelCount) pixelData[index] = true;
+  if (index >= 0 && index < sizeof(pixelData)) pixelData[index] = true;
 }
 
 // Renders the pixel data to the LEDs
 void renderToHardware()
 {
   // Renders pixelData to all of pixelPin
-  for (int i = 0; i < pixelCount; i++)
+  for (int i = 0; i < sizeof(pixelData); i++)
   {
     // Determines if the pin is digital or not
     boolean isDigital = !(pixelPin[i] >= 14);
@@ -438,8 +593,6 @@ void renderToHardware()
 void input()
 {
   int input = analogRead(buttonPin);
-
-  Serial.println(input);
 
   leftButtonState = false;
   rightButtonState = false;
@@ -492,5 +645,17 @@ boolean isRightButton()
   boolean toReturn = filteredRightButton;
   filteredRightButton = false;
   return toReturn;
+}
+
+// Returns if the left button is pressed (one time use to prevent button spamming)
+boolean isLeftButtonUnfil()
+{
+  return leftButtonState;
+}
+
+// Returns if the right button is pressed (one time use to prevent button spamming)
+boolean isRightButtonUnfil()
+{
+  return rightButtonState;
 }
 
