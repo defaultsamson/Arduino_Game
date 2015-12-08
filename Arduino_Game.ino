@@ -13,10 +13,10 @@ int buttonPin = 18; // The pin assigned to the button input
 int piezoPin = 19; // The pin assigned to the button input
 
 // Instanciates the pin assigned to each pixel
-int pixelPin[] = {14, 5, 6, 10,
-                  15, 4, 7, 11,
-                  16, 3, 8, 12,
-                  17, 2, 9, 13};
+int pixelPin[] = {12, 3, 4, 8,
+                  13, 2, 5, 9,
+                  14, 1, 6, 10,
+                  15, 0, 7, 11};
 
 // Instanciates the pixel data pixels and their states
 boolean pixelData[] = {false, false, false, false,
@@ -72,6 +72,8 @@ int blockLength = 8;
 
 void setup()
 {
+  //Serial.begin(9600);
+  
   // Sets up the pins
   pinMode(buttonPin, INPUT);
   pinMode(piezoPin, OUTPUT);
@@ -384,7 +386,7 @@ void tick()
   currentTick++;
 }
 
-int currentSong = 1;
+int currentSong = 0;
 
 String songTone1[] = {"C4", "C4#", "B5", "G5", "F4"};
 int songDuration1[] = {1, 1, 2, 2, 1};
@@ -400,24 +402,26 @@ int lastTime = 0;
 
 void music(long currentTime)
 {
-  int lastDuration = 0;
-  
-  if (toPlayNoteIndex > 0) // If the first note has been played, play the next note after the original note is finished. Else play immediately
+  if (currentSong >= 0)
   {
-    int noteDuration = songDurations[currentSong][toPlayNoteIndex - 1];
-    lastDuration = 60000 / songBpm[currentSong] / noteDuration;
-  }
-
-  // If the last note is done playing
-  if (currentTime > (lastTime + lastDuration) && toPlayNoteIndex < 5)
-  {
-    lastTime = currentTime;
+    int lastDuration = 0;
     
-    // Play the next note in the current song
-    int duration = 60000 / songBpm[currentSong] / songDurations[currentSong][toPlayNoteIndex];
-    String noteTone = songTones[currentSong][toPlayNoteIndex];
-    playNote(noteTone, duration);
-    toPlayNoteIndex++;
+    if (toPlayNoteIndex > 0) // If the first note has been played, play the next note after the original note is finished. Else play immediately
+    {
+      int noteDuration = songDurations[currentSong][toPlayNoteIndex - 1];
+      lastDuration = 60000 / songBpm[currentSong] / noteDuration;
+    }
+  
+    // If the last note is done playing
+    if (currentTime > (lastTime + lastDuration) && toPlayNoteIndex < 5)
+    {
+      lastTime = currentTime;
+      // Play the next note in the current song
+      int duration = 60000 / songBpm[currentSong] / songDurations[currentSong][toPlayNoteIndex];
+      String noteTone = songTones[currentSong][toPlayNoteIndex];
+      playNote(noteTone, duration);
+      toPlayNoteIndex++;
+    }
   }
 }
 
