@@ -1,3 +1,5 @@
+#include <Tone.h>
+
 /*
    Analogue pin legend
 
@@ -9,8 +11,9 @@
    Pin 19 = Analog in 5
 */
 
-int buttonPin = 18; // The pin assigned to the button input
-int piezoPin = 19; // The pin assigned to the button input
+#define buttonPin 18 // The pin assigned to the button input
+#define piezoPin1 19 // The pin assigned to the button input
+#define piezoPin2 16 // The pin assigned to the button input
 
 // Instanciates the pin assigned to each pixel
 int pixelPin[] = {12, 3, 4, 8,
@@ -33,8 +36,15 @@ boolean rightButtonState = false; // The right button state
 boolean rightPrevButtonState = true; // The right button's previous state (true to prevent program from thinking button was pushed at beginning)
 boolean filteredRightButton = false; // A filtered output of the right button
 
-int biv[] = {262, 329, 572, 1023}; // Button in values (the raw analogRead() for each combination of button presses)
-int inputIntervals[] = {biv[0] + ((biv[1] - biv[0]) / 2), biv[1] + ((biv[2] - biv[1]) / 2), biv[2] + ((biv[3] - biv[2]) / 2), biv[3]};
+// Button in values (the raw analogRead() for each combination of button presses)
+#define biv1 262
+#define biv2 329
+#define biv3 572
+#define biv4 1023
+// No in4 because it's always 1023
+#define in1 (biv1 + ((biv2 - biv1) / 2))
+#define in2 (biv2 + ((biv3 - biv2) / 2))
+#define in3 (biv3 + ((biv4 - biv3) / 2))
 
 
 int tickFrequency = 30; // Frequency of the ticks in Hz
@@ -70,19 +80,26 @@ int blockX[] = {0, 0, 0, 0, 0, 0, 0, 0};
 int blockY[] = {0, 0, 0, 0, 0, 0, 0, 0};
 int blockLength = 8;
 
+
+Tone tonePlayer[2];
+
 void setup()
 {
-  //Serial.begin(9600);
+  Serial.begin(9600);
   
   // Sets up the pins
   pinMode(buttonPin, INPUT);
-  pinMode(piezoPin, OUTPUT);
+  pinMode(piezoPin1, OUTPUT);
+  pinMode(piezoPin2, OUTPUT);
 
   // Sets all the pins attatched to pixels to output
   for (int i = 0; i < sizeof(pixelData); i++)
   {
     pinMode(pixelPin[i], OUTPUT);
   }
+
+  tonePlayer[0].begin(piezoPin1);
+  tonePlayer[1].begin(piezoPin2);
 }
 
 void loop()
@@ -113,8 +130,6 @@ void loop()
 int menuLeft = 0;
 int menuRight = 0;
 
-int garbage = 10;
-
 void tick()
 {
   if (isMenu)
@@ -125,8 +140,6 @@ void tick()
       menuRight = 0;
       isMenu = false;
     }
-
-    //tone(piezoPin, garbage);
 
     if (currentTick % 20 == 0)
     {
@@ -388,59 +401,47 @@ void tick()
 
 int currentSong = 0;
 
-String songTone1[] = {"C4", "C4#", "B5", "G5", "F4"};
-int songDuration1[] = {1, 1, 2, 2, 1};
+int songTone1[] = {NOTE_E6, NOTE_B5, NOTE_C6, NOTE_D6, NOTE_E6, NOTE_D6, NOTE_C6, NOTE_B5};
+int toneDuration1[] = {4, 8, 8, 8, 16, 16, 8, 8};
+int songBass1[] = {NOTE_E4, NOTE_E5, NOTE_E4, NOTE_E5, NOTE_E4, NOTE_E5, NOTE_E4, NOTE_E5};
+int bassDuration1[] = {8, 8, 8, 8, 8, 8, 8, 8};
 int bpm1 = 120;
 
-String* songTones[] = {songTone1};
-int* songDurations[] = {songDuration1};
+int* songTones[] = {songTone1, songBass1};
+int* toneDurations[] = {toneDuration1, bassDuration1};
+int trackLengths[] = {sizeof(songTone1), sizeof(songBass1)};
 int songBpm[] = {bpm1};
 
-int toPlayNoteIndex = 0;
-
-int lastTime = 0;
+int playNoteIndex[] = {0, 0};
+int lastTime[] = {0, 0};
 
 void music(long currentTime)
 {
   if (currentSong >= 0)
   {
-    int lastDuration = 0;
-    
-    if (toPlayNoteIndex > 0) // If the first note has been played, play the next note after the original note is finished. Else play immediately
+    for (int i = 0; i < 2; i++) // sizeof(playNoteIndex) returns 4 for some reason, so manually replace it with 2
     {
-      int noteDuration = songDurations[currentSong][toPlayNoteIndex - 1];
-      lastDuration = 60000 / songBpm[currentSong] / noteDuration;
-    }
-  
-    // If the last note is done playing
-    if (currentTime > (lastTime + lastDuration) && toPlayNoteIndex < 5)
-    {
-      lastTime = currentTime;
-      // Play the next note in the current song
-      int duration = 60000 / songBpm[currentSong] / songDurations[currentSong][toPlayNoteIndex];
-      String noteTone = songTones[currentSong][toPlayNoteIndex];
-      playNote(noteTone, duration);
-      toPlayNoteIndex++;
-    }
-  }
-}
-
-String notes[] = {"C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4",
-                  "C5", "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5",
-                  "C6", "C6#", "D6", "D6#", "E6", "F6", "F6#", "G6", "G6#", "A6", "A6#", "B6",};
-int tones[] = {262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494,
-               523, 554, 587, 622, 695, 698, 740, 784, 831, 880, 932, 988,
-               1046, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976};
-
-void playNote(String note, int duration)
-{
-  // play the tone corresponding to the note name
-  for (int i = 0; i < sizeof(notes); i++)
-  {
-    if (note == notes[i])
-    {
-      tone(piezoPin, tones[i], duration);
-      return;
+      if (playNoteIndex[i] < trackLengths[currentSong + i])
+      {
+        int lastDuration = 0;
+      
+        if (playNoteIndex[i] > 0) // If the first note has been played, play the next note after the original note is finished. Else play immediately
+        {
+          int noteDuration = toneDurations[currentSong + i][playNoteIndex[i] - 1];
+          lastDuration = 60000 / (songBpm[currentSong] / 4) / noteDuration;
+        }
+      
+        // If the last note is done playing
+        if (currentTime > (lastTime[i] + lastDuration)) // TODO FIX CUT OFF
+        {
+          lastTime[i] = currentTime;
+          // Play the next note in the current song
+          int duration = 60000 / (songBpm[currentSong] / 4) / toneDurations[currentSong][playNoteIndex[i]];
+          int noteTone = songTones[currentSong + i][playNoteIndex[i]];
+          tonePlayer[i].play(noteTone, duration);
+          playNoteIndex[i]++;
+        }
+      }
     }
   }
 }
@@ -602,16 +603,16 @@ void input()
   rightButtonState = false;
 
   // Gets the raw data for which buttons are pressed
-  if (input <= inputIntervals[0])
+  if (input <= in1)
   {
     leftButtonState = true;
     rightButtonState = true;
   }
-  else if (input <= inputIntervals[1])
+  else if (input <= in2)
   {
     leftButtonState = true;
   }
-  else if (input <= inputIntervals[2])
+  else if (input <= in3)
   {
     rightButtonState = true;
   }
@@ -620,14 +621,12 @@ void input()
   if (leftButtonState && !leftPrevButtonState)
   {
     filteredLeftButton = true;
-    //Serial.println("[INPUT] Left button pressed.");
   }
 
   // If the button was just pressed then set the filter to true
   if (rightButtonState && !rightPrevButtonState)
   {
     filteredRightButton = true;
-    //Serial.println("[INPUT] Right button pressed.");
   }
 
   // Sets the previous button states for the next time input() is called
