@@ -1,7 +1,7 @@
 byte currentSong = 0; // The current song being played
 
 int tetrisMainTone[] = {NOTE_E6, NOTE_B5, NOTE_C6, NOTE_D6, NOTE_E6, NOTE_D6, NOTE_C6, NOTE_B5,
-                        NOTE_A5, NOTE_A5, NOTE_C6, NOTE_E6, NOTE_D6, NOTE_C6,
+                        NOTE_A5, NOTE_A5, 0, NOTE_A5, NOTE_C6, NOTE_E6, NOTE_D6, NOTE_C6,
                         NOTE_B5, NOTE_B5, NOTE_C6, NOTE_D6, NOTE_E6,
                         NOTE_C6, NOTE_A5, NOTE_A5, 0,
                         0, NOTE_D6, NOTE_F6, NOTE_A6, NOTE_G6, NOTE_F6,
@@ -11,14 +11,14 @@ int tetrisMainTone[] = {NOTE_E6, NOTE_B5, NOTE_C6, NOTE_D6, NOTE_E6, NOTE_D6, NO
                         NOTE_E6, NOTE_C6, 
                         NOTE_D6, NOTE_B5,
                         NOTE_C6, NOTE_A5,
-                        NOTE_GS5, NOTE_B5,
+                        NOTE_GS5, NOTE_B5, 0,
                         NOTE_E6, NOTE_C6, 
                         NOTE_D6, NOTE_B5,
                         NOTE_C6, NOTE_E6, NOTE_A6,
                         NOTE_GS6
                        };
 byte tetrisMainDuration[] = {4, 8, 8, 8, 16, 16, 8, 8,
-                             4, 8, 8, 4, 8, 8,
+                             8, 16, 16, 8, 8, 4, 8, 8,
                              4, 8, 8, 4, 4,
                              4, 4, 4, 4,
                              8, 4, 8, 4, 8, 8,
@@ -28,7 +28,7 @@ byte tetrisMainDuration[] = {4, 8, 8, 8, 16, 16, 8, 8,
                              2, 2,
                              2, 2,
                              2, 2,
-                             2, 2,
+                             2, 4, 4,
                              2, 2,
                              2, 2,
                              4, 4, 2,
@@ -68,7 +68,7 @@ byte tetrisBassDuration[] = {8, 8, 8, 8, 8, 8, 8, 8,
                              8, 8, 8, 8, 8, 8, 8, 8,
                              8, 8, 8, 8, 8, 8, 8, 8
                             };
-byte bpm1 = 135;
+byte bpm1 = 150;
 
 int* songTones[] = {tetrisMainTone, tetrisBassTone};
 byte* toneDurations[] = {tetrisMainDuration, tetrisBassDuration};
