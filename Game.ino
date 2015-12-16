@@ -71,6 +71,7 @@ void tick()
     currentLevel = 1;
     isDead = false;
     isMenu = true;
+    stopSong();
   }
   else // Else, the player must still be in-game
   {
