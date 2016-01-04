@@ -90,6 +90,7 @@ void loop()
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 int menuLeft = 0;
 int menuRight = 0;
@@ -643,3 +644,5 @@ boolean isRightButtonUnfil()
 }
 >>>>>>> parent of 252b084... Currently Everything is in a working state
 
+=======
+>>>>>>> parent of eab6781... Tested for basic garbag
