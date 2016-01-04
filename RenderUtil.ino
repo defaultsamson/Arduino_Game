@@ -7,7 +7,7 @@ boolean pixelData[] = {false, false, false, false,
 // Sets all the pixel data to false
 void clearPixels()
 {
-  for (int i = 0; i < sizeof(pixelData); i++)
+  for (int i = 0; i < pixelCount(); i++)
   {
     pixelData[i] = false;
   }
@@ -16,23 +16,30 @@ void clearPixels()
 // Sets a pixel at the given coordinate to be drawn
 void drawPixel(int x, int y)
 {
-  // converts coords parameters from bottom left from 1-4
-  // To top left from 0-3
-  int newY = 4 - y;
-  int newX = x - 1;
-
-  // The index of the pixel for the specified coordinate
-  int index = (newY * 4) + newX;
-
-  // Prevents out of bound pixelData indexes
-  if (index >= 0 && index < sizeof(pixelData)) pixelData[index] = true;
+  if (x == 4 && y == 1)
+  {
+    //garbag
+  }
+  else
+  {
+    // converts coords parameters from bottom left from 1-4
+    // To top left from 0-3
+    int newY = 4 - y;
+    int newX = x - 1;
+  
+    // The index of the pixel for the specified coordinate
+    int index = (newY * 4) + newX;
+  
+    // Prevents out of bound pixelData indexes
+    if (index >= 0 && index < sizeof(pixelData)) pixelData[index] = true;
+  }
 }
 
 // Renders the pixel data to the LEDs
 void renderToHardware()
 {
   // Renders pixelData to all of pixelPin
-  for (int i = 0; i < sizeof(pixelData); i++)
+  for (int i = 0; i < pixelCount(); i++)
   {
     // Determines if the pin is digital or not
     boolean isDigital = !(pixelPin[i] >= 14);
