@@ -19,6 +19,28 @@ byte displayScore; // The display score for the end LED's
 byte menuLeft = 0; // The bars being shown at the left of the menu screen
 byte menuRight = 0; // The bars being shown at the right of the menu screen
 
+// Left is true, right is false
+boolean previouslyTypedMenu[] = {false, false, false, false, false, false, false, false, false, false};
+void updateCheats(boolean isLeft)
+{
+  for (int i = sizeof(previouslyTypedMenu); i > 0; i--) previouslyTypedMenu[i] = previouslyTypedMenu[i - 1];
+  previouslyTypedMenu[0] = isLeft;
+
+  for (int i = 1; i < sizeof(previouslyTypedMenu); i++) Serial.print(previouslyTypedMenu[i] ? "true" : "false");
+  Serial.println();
+
+  boolean doTetris = true;
+  boolean playTetris[] = {true, true, false, true, false, false, true, true, false, false};
+  for (int i = 0; i < sizeof(previouslyTypedMenu); i++) if (previouslyTypedMenu[i] != playTetris[i]) doTetris = false;
+
+  if (doTetris)
+  {
+    Serial.println("garbag");
+    return;
+  }
+  
+}
+
 // Does all the game math
 void tick()
 {
@@ -29,8 +51,20 @@ void tick()
       menuLeft = 0;
       menuRight = 0;
       isMenu = false;
+      for (int i = 0; i < sizeof(previouslyTypedMenu); i++) previouslyTypedMenu[i] = false;
     }
 
+    // Updates the cheats scripts
+    if (isLeftButton())
+    {
+      updateCheats(true);
+    }
+    if (isRightButton())
+    {
+      updateCheats(false);
+    }
+
+    // Updates the menu start screen bars
     if (currentTick % 20 == 0)
     {
       if (isLeftButtonUnfil())
@@ -95,6 +129,8 @@ void tick()
       else if (currentLevel == 2)
       {
         MAX_SCORE = 40;
+
+        playSong(1);
 
         blockDropInterval = 60;
         blockProgressInterval = 15;
