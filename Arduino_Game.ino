@@ -12,17 +12,9 @@
 #include <Tone.h>
 Tone tonePlayer[2]; // An array of 2 tone generators
 
-<<<<<<< HEAD
 #define buttonPin 18 // The pin assigned to the button input
 #define piezoPin1 19 // The pin assigned to the first piezo buzzer
 #define piezoPin2 16 // The pin assigned to the second piezo buzzer
-=======
-// Instanciates the pin assigned to each pixel
-int pixelPin[] = {14, 5, 6, 10,
-                  15, 4, 7, 11,
-                  16, 3, 8, 12,
-                  17, 2, 9, 13};
->>>>>>> parent of 252b084... Currently Everything is in a working state
 
 byte pixelPin[] = {12, 3, 4, 8,
                    13, 2, 5, 9,
@@ -40,11 +32,8 @@ long currentTime = 0; // The current time in milliseconds
 // The setup script
 void setup()
 {
-<<<<<<< HEAD
   //Serial.begin(9600);
 
-=======
->>>>>>> parent of 252b084... Currently Everything is in a working state
   // Sets up the pins
   pinMode(buttonPin, INPUT);
   pinMode(piezoPin1, OUTPUT);
@@ -89,9 +78,6 @@ void loop()
   }
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 int menuLeft = 0;
 int menuRight = 0;
 
@@ -642,7 +628,6 @@ boolean isRightButtonUnfil()
 {
   return rightButtonState;
 }
->>>>>>> parent of 252b084... Currently Everything is in a working state
 
 =======
 >>>>>>> parent of eab6781... Tested for basic garbag
