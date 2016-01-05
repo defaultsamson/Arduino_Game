@@ -629,5 +629,3 @@ boolean isRightButtonUnfil()
   return rightButtonState;
 }
 
-=======
->>>>>>> parent of eab6781... Tested for basic garbag
