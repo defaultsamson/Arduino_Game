@@ -2,8 +2,7 @@
 boolean pixelData[] = {false, false, false, false,
                        false, false, false, false,
                        false, false, false, false,
-                       false, false, false, false
-                      };
+                       false, false, false, false};
 
 // Sets all the pixel data to false
 void clearPixels()
@@ -17,16 +16,23 @@ void clearPixels()
 // Sets a pixel at the given coordinate to be drawn
 void drawPixel(int x, int y)
 {
-  // converts coords parameters from bottom left from 1-4
-  // To top left from 0-3
-  int newY = 4 - y;
-  int newX = x - 1;
-
-  // The index of the pixel for the specified coordinate
-  int index = (newY * 4) + newX;
-
-  // Prevents out of bound pixelData indexes
-  if (index >= 0 && index < sizeof(pixelData)) pixelData[index] = true;
+  if (x == 4 && y == 1)
+  {
+    //garbag
+  }
+  else
+  {
+    // converts coords parameters from bottom left from 1-4
+    // To top left from 0-3
+    int newY = 4 - y;
+    int newX = x - 1;
+  
+    // The index of the pixel for the specified coordinate
+    int index = (newY * 4) + newX;
+  
+    // Prevents out of bound pixelData indexes
+    if (index >= 0 && index < sizeof(pixelData)) pixelData[index] = true;
+  }
 }
 
 // Renders the pixel data to the LEDs

@@ -72,7 +72,7 @@ void setBlockY(int index, int value)
 // Subtracts 1 from the y ordinate of the block with the specified index
 void progressBlock(int index)
 {
-  blockY[index] -= 1;
+  if (!isOffScreen(blockX[index], blockY[index])) blockY[index] -= 1;
 }
 
 // Gets the total amount of blocks

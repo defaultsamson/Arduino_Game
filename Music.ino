@@ -28,60 +28,60 @@ void playSong(byte songIndex)
     for (int i = 0; i < songArrayLengths; i++) mainDuration[i] = 0;
     for (int i = 0; i < songArrayLengths; i++) bassTone[i] = 0;
     for (int i = 0; i < songArrayLengths; i++) bassDuration[i] = 0;
-
+    
     for (int i = 0; i < playNoteIndexLength; i++) trackLengths[i] = 0;
 
     initMusic = false;
   }
-
+  
   playNoteIndex[0] = 0;
   playNoteIndex[1] = 0;
   lastTime[0] = 0;
   lastTime[1] = 0;
 
-
+  
   if (songIndex = 1)
   {
     int mainTetris[] = {NOTE_E6, NOTE_B5, NOTE_C6, NOTE_D6, NOTE_E6, NOTE_D6, NOTE_C6, NOTE_B5,
-                        NOTE_A5, NOTE_A5, 0, NOTE_A5, NOTE_C6, NOTE_E6, NOTE_D6, NOTE_C6,
-                        NOTE_B5, NOTE_B5, NOTE_C6, NOTE_D6, NOTE_E6,
-                        NOTE_C6, NOTE_A5, NOTE_A5, 0,
-                        0, NOTE_D6, NOTE_F6, NOTE_A6, NOTE_G6, NOTE_F6,
-                        NOTE_E6, NOTE_E6, NOTE_C6, NOTE_E6, NOTE_D6, NOTE_C6,
-                        NOTE_B5, NOTE_B5, NOTE_C6, NOTE_D6, NOTE_E6,
-                        NOTE_C6, NOTE_A5, NOTE_A5,
-
-                        NOTE_E6, NOTE_C6,
-                        NOTE_D6, NOTE_B5,
-                        NOTE_C6, NOTE_A5,
-                        NOTE_GS5, NOTE_B5, 0,
-                        NOTE_E6, NOTE_C6,
-                        NOTE_D6, NOTE_B5,
-                        NOTE_C6, NOTE_E6, NOTE_A6,
-                        NOTE_GS6
-                       };
+                  NOTE_A5, NOTE_A5, 0, NOTE_A5, NOTE_C6, NOTE_E6, NOTE_D6, NOTE_C6,
+                  NOTE_B5, NOTE_B5, NOTE_C6, NOTE_D6, NOTE_E6,
+                  NOTE_C6, NOTE_A5, NOTE_A5, 0,
+                  0, NOTE_D6, NOTE_F6, NOTE_A6, NOTE_G6, NOTE_F6,
+                  NOTE_E6, NOTE_E6, NOTE_C6, NOTE_E6, NOTE_D6, NOTE_C6,
+                  NOTE_B5, NOTE_B5, NOTE_C6, NOTE_D6, NOTE_E6,
+                  NOTE_C6, NOTE_A5, NOTE_A5,
+                  
+                  NOTE_E6, NOTE_C6, 
+                  NOTE_D6, NOTE_B5,
+                  NOTE_C6, NOTE_A5,
+                  NOTE_GS5, NOTE_B5, 0,
+                  NOTE_E6, NOTE_C6, 
+                  NOTE_D6, NOTE_B5,
+                  NOTE_C6, NOTE_E6, NOTE_A6,
+                  NOTE_GS6
+                  };
     for (int i = 0; i < sizeof(mainTetris); i++) mainTone[i] = mainTetris[i];
 
     byte tetrisDuration[] = {4, 8, 8, 8, 16, 16, 8, 8,
-                             8, 16, 16, 8, 8, 4, 8, 8,
-                             4, 8, 8, 4, 4,
-                             4, 4, 4, 4,
-                             8, 4, 8, 4, 8, 8,
-                             4, 8, 8, 4, 8, 8,
-                             4, 8, 8, 4, 4,
-                             4, 4, 2,
+                       8, 16, 16, 8, 8, 4, 8, 8,
+                       4, 8, 8, 4, 4,
+                       4, 4, 4, 4,
+                       8, 4, 8, 4, 8, 8,
+                       4, 8, 8, 4, 8, 8,
+                       4, 8, 8, 4, 4,
+                       4, 4, 2,
 
-                             2, 2,
-                             2, 2,
-                             2, 2,
-                             2, 4, 4,
-                             2, 2,
-                             2, 2,
-                             4, 4, 2,
-                             1
-                            };
+                       2, 2,
+                       2, 2,
+                       2, 2,
+                       2, 4, 4,
+                       2, 2,
+                       2, 2,
+                       4, 4, 2,
+                       1
+                       };
     for (int i = 0; i < sizeof(tetrisDuration); i++) mainDuration[i] = tetrisDuration[i];
-
+    
     for (int iy = 0; iy < 16; iy++)
     {
       // Sets up duration based on bar
@@ -149,50 +149,50 @@ void playSong(byte songIndex)
         }
       }
     }
-
-    trackLengths[0] = 62;
+    
+    trackLengths[0] = 62; 
     trackLengths[1] = 128;
     bpm = 150;
 
     currentSong = 1;
     /*
-      NOTE_E4, NOTE_E5, NOTE_E4, NOTE_E5, NOTE_E4, NOTE_E5, NOTE_E4, NOTE_E5,
-      NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
-      NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,
-      NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_B4, NOTE_C5,
-      NOTE_D4, NOTE_D5, NOTE_D4, NOTE_D5, NOTE_D4, NOTE_D5, NOTE_D4, NOTE_D5,
-      NOTE_C4, NOTE_C5, NOTE_C4, NOTE_C5, NOTE_C4, NOTE_C5, NOTE_C4, NOTE_C5,
-      NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,
-      NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
-      x2
-
-      NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
-      NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,
-      NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
-      NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,
-      NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
-      NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,
-      NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
-      NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,}
+    NOTE_E4, NOTE_E5, NOTE_E4, NOTE_E5, NOTE_E4, NOTE_E5, NOTE_E4, NOTE_E5,
+    NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
+    NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,
+    NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_B4, NOTE_C5,
+    NOTE_D4, NOTE_D5, NOTE_D4, NOTE_D5, NOTE_D4, NOTE_D5, NOTE_D4, NOTE_D5,
+    NOTE_C4, NOTE_C5, NOTE_C4, NOTE_C5, NOTE_C4, NOTE_C5, NOTE_C4, NOTE_C5,
+    NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,
+    NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
+    x2
+    
+    NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
+    NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,
+    NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
+    NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,
+    NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
+    NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,
+    NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4, NOTE_A3, NOTE_A4,
+    NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4, NOTE_GS3, NOTE_GS4,}
     */
-
+    
     /*
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8
     */
   }
 }
