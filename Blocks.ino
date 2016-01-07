@@ -75,6 +75,14 @@ void progressBlock(int index)
   blockY[index] -= 1;
 }
 
+void progressBlocks()
+{
+  for (int i = 0; i < blockCount(); i++)
+  {
+    progressBlock(i);
+  }
+}
+
 // Gets the total amount of blocks
 int blockCount()
 {

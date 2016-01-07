@@ -18,27 +18,9 @@ int trackLengths[2];
 int playNoteIndex[] = {0, 0};
 int lastTime[] = {0, 0};
 
-boolean initMusic = true;
-
 void playSong(byte songIndex)
 {
-  if (initMusic) // Initializes all song arrays
-  {
-    for (int i = 0; i < songArrayLengths; i++) mainTone[i] = 0;
-    for (int i = 0; i < songArrayLengths; i++) mainDuration[i] = 0;
-    for (int i = 0; i < songArrayLengths; i++) bassTone[i] = 0;
-    for (int i = 0; i < songArrayLengths; i++) bassDuration[i] = 0;
-
-    for (int i = 0; i < playNoteIndexLength; i++) trackLengths[i] = 0;
-
-    initMusic = false;
-  }
-
-  playNoteIndex[0] = 0;
-  playNoteIndex[1] = 0;
-  lastTime[0] = 0;
-  lastTime[1] = 0;
-
+  stopSong();
 
   if (songIndex = 1)
   {
@@ -199,7 +181,21 @@ void playSong(byte songIndex)
 
 void stopSong()
 {
+  for (int i = 0; i < songArrayLengths; i++) mainTone[i] = 0;
+  for (int i = 0; i < songArrayLengths; i++) mainDuration[i] = 0;
+  for (int i = 0; i < songArrayLengths; i++) bassTone[i] = 0;
+  for (int i = 0; i < songArrayLengths; i++) bassDuration[i] = 0;
+
+  for (int i = 0; i < playNoteIndexLength; i++) trackLengths[i] = 0;
+
   currentSong = 0;
+  playNoteIndex[0] = 0;
+  playNoteIndex[1] = 0;
+  lastTime[0] = 0;
+  lastTime[1] = 0;
+  trackLengths[0] = 0;
+  trackLengths[1] = 0;
+  bpm = 0;
 }
 
 // Plays the current song if there is one

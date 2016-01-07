@@ -12,7 +12,8 @@
 #include <Tone.h>
 Tone tonePlayer[2]; // An array of 2 tone generators
 
-#define buttonPin 18 // The pin assigned to the button input
+#define buttonPinLeft 18 // The pin assigned to the button input
+#define buttonPinRight 17 // The pin assigned to the button input
 #define piezoPin1 19 // The pin assigned to the first piezo buzzer
 #define piezoPin2 16 // The pin assigned to the second piezo buzzer
 
@@ -40,7 +41,8 @@ void setup()
   Serial.begin(9600);
 
   // Sets up the pins
-  pinMode(buttonPin, INPUT);
+  pinMode(buttonPinLeft, INPUT);
+  pinMode(buttonPinRight, INPUT);
   pinMode(piezoPin1, OUTPUT);
   pinMode(piezoPin2, OUTPUT);
 
@@ -68,7 +70,6 @@ void loop()
   if ((lastTick + (1000 / tickFrequency)) < currentTime)
   {
     tick();
-
     lastTick = currentTime; // Saves the current system time of this tick for next game loop's reference
   }
 
@@ -76,7 +77,6 @@ void loop()
   if ((lastRender + (1000 / renderFrequency)) < currentTime)
   {
     render();
-
     lastRender = currentTime; // Saves the current system time of this render for next loop's reference
   }
 
@@ -84,5 +84,6 @@ void loop()
   if (tickFrequencyChangeInterval > 0 && (lastTickFrequencyChange + (1000 / tickFrequencyChangeInterval)) < currentTime && tickFrequency < tickFrequencyMax)
   {
     tickFrequency++;
+    lastTickFrequencyChange = currentTime;
   }
 }

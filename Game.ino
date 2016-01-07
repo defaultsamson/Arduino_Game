@@ -16,29 +16,45 @@ byte MAX_SCORE; // The score a player has to reach to beat the level
 byte score; // The current score of the player
 byte displayScore; // The display score for the end LED's
 
-byte menuLeft = 0; // The bars being shown at the left of the menu screen
-byte menuRight = 0; // The bars being shown at the right of the menu screen
-
 // Left is true, right is false
-boolean previouslyTypedMenu[] = {false, false, false, false, false, false, false, false, false, false};
+boolean previouslyTypedMenu[] = {false, false, false, false, false, false, false, false};
 void updateCheats(boolean isLeft)
 {
   for (int i = sizeof(previouslyTypedMenu); i > 0; i--) previouslyTypedMenu[i] = previouslyTypedMenu[i - 1];
   previouslyTypedMenu[0] = isLeft;
 
-  for (int i = 1; i < sizeof(previouslyTypedMenu); i++) Serial.print(previouslyTypedMenu[i] ? "true" : "false");
-  Serial.println();
-
   boolean doTetris = true;
-  boolean playTetris[] = {true, true, false, true, false, false, true, true, false, false};
+  boolean playTetris[] = {true, true, false, true, false, false, true, true};
   for (int i = 0; i < sizeof(previouslyTypedMenu); i++) if (previouslyTypedMenu[i] != playTetris[i]) doTetris = false;
 
   if (doTetris)
   {
-    Serial.println("garbag");
+    playSong(1);
+    resetCheats();
     return;
   }
-  
+
+  boolean bossLevel = true;
+  boolean bossLevelA[] = {false, true, false, true, false, true, true, false};
+  for (int i = 0; i < sizeof(previouslyTypedMenu); i++) if (previouslyTypedMenu[i] != bossLevelA[i]) bossLevel = false;
+
+  if (bossLevel)
+  {
+    levelInit = true;
+    currentLevel = 3;
+    isDead = false;
+    score = 0;
+    displayScore = 0;
+    isMenu = false;
+    stopSong();
+    resetCheats();
+    return;
+  }
+}
+
+void resetCheats()
+{
+  for (int i = 0; i < sizeof(previouslyTypedMenu); i++) previouslyTypedMenu[i] = false;
 }
 
 // Does all the game math
@@ -46,12 +62,12 @@ void tick()
 {
   if (isMenu)
   {
-    if (menuLeft + menuRight == 4)
+    if (score + displayScore == 4)
     {
-      menuLeft = 0;
-      menuRight = 0;
+      score = 0;
+      displayScore = 0;
       isMenu = false;
-      for (int i = 0; i < sizeof(previouslyTypedMenu); i++) previouslyTypedMenu[i] = false;
+      resetCheats();
     }
 
     // Updates the cheats scripts
@@ -69,20 +85,20 @@ void tick()
     {
       if (isLeftButtonUnfil())
       {
-        if (menuLeft < 2) menuLeft++;
+        if (score < 2) score++;
       }
       else
       {
-        if (menuLeft > 0) menuLeft--;
+        if (score > 0) score--;
       }
 
       if (isRightButtonUnfil())
       {
-        if (menuRight < 2) menuRight++;
+        if (displayScore < 2) displayScore++;
       }
       else
       {
-        if (menuRight > 0) menuRight--;
+        if (displayScore > 0) displayScore--;
       }
     }
   }
@@ -178,10 +194,7 @@ void tick()
     // Progress the blocks
     if (currentTick % blockProgressInterval == 0)
     {
-      for (int i = 0; i < blockCount(); i++)
-      {
-        progressBlock(i);
-      }
+      progressBlocks();
     }
 
     // Spawns blocks each interval
@@ -326,7 +339,7 @@ void render()
 
   if (isMenu)
   {
-    switch (menuLeft)
+    switch (score)
     {
       case 2:
         drawPixel(2, 1);
@@ -341,7 +354,7 @@ void render()
         break;
     }
 
-    switch (menuRight)
+    switch (displayScore)
     {
       case 2:
         drawPixel(3, 1);
