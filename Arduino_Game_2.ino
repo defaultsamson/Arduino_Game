@@ -55,6 +55,8 @@ void setup()
   // Begins all Tone activity
   tonePlayer[0].begin(piezoPin1);
   tonePlayer[1].begin(piezoPin2);
+
+  playSong(2);
 }
 
 // The game loop
