@@ -64,13 +64,14 @@ void loop()
 {
   currentTime = millis();
 
-  // Updates input and music constantly for better responsiveness
-  updateInput();
+  // Updates music constantly for better responsiveness
   music(currentTime);
 
   // Limits tick method to only run at the speed of the variable tickInterval (default 30Hz)
   if ((lastTick + (1000 / tickFrequency)) < currentTime)
   {
+    // Updates input alongside tick so that the filter works properly
+    updateInput();
     tick();
     lastTick = currentTime; // Saves the current system time of this tick for next game loop's reference
   }
