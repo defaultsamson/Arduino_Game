@@ -1,6 +1,6 @@
 // The coordinates of the blocks
-byte blockX[] = {0, 0, 0, 0, 0, 0, 0, 0}; // The x block data
-byte blockY[] = {0, 0, 0, 0, 0, 0, 0, 0}; // The y block data
+byte blockX[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // The x block data
+byte blockY[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // The y block data
 
 #define blockLength sizeof(blockX)
 
@@ -40,8 +40,8 @@ void clearBlocks()
 {
   for (int i = 0; i < blockLength; i++)
   {
-    blockX[i] = 0;
-    blockY[i] = 0;
+    blockX[i] = -1;
+    blockY[i] = -1;
   }
 }
 

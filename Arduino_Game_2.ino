@@ -55,8 +55,6 @@ void setup()
   // Begins all Tone activity
   tonePlayer[0].begin(piezoPin1);
   tonePlayer[1].begin(piezoPin2);
-
-  playSong(2);
 }
 
 // The game loop
@@ -66,12 +64,11 @@ void loop()
 
   // Updates music constantly for better responsiveness
   music(currentTime);
+  updateInput();
 
   // Limits tick method to only run at the speed of the variable tickInterval (default 30Hz)
   if ((lastTick + (1000 / tickFrequency)) < currentTime)
   {
-    // Updates input alongside tick so that the filter works properly
-    updateInput();
     tick();
     lastTick = currentTime; // Saves the current system time of this tick for next game loop's reference
   }
