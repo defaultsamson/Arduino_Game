@@ -233,6 +233,44 @@ else if (songIndex = 2) {
     for (int i = 0; i < sizeof(dummyDuration); i++) mainDuration[i] = dummyDuration[i];
 
 
+int bassDummy[] = {
+      0, 0, 0, 0, 0, 0, 0, 0,
+      NOTE_G4, NOTE_G4, NOTE_F4, NOTE_ES4, NOTE_DS4, NOTE_D4, NOTE_AS3, NOTE_G3, NOTE_DS3, 
+      NOTE_D4, NOTE_AS3, NOTE_G3, NOTE_DS3, NOTE_D4, NOTE_AS3, NOTE_G3, NOTE_DS3,
+      NOTE_C4, NOTE_C4, NOTE_AS3, NOTE_C4, NOTE_CS4, 0, NOTE_G4, NOTE_G4, NOTE_F4, NOTE_ES4, NOTE_DS4
+      NOTE_G4, NOTE_G4, NOTE_F4, NOTE_ES4, NOTE_DS4, NOTE_D4, NOTE_G4, NOTE_FS4, NOTE_F4,
+     NOTE_G3, NOTE_A3, NOTE_AS3, NOTE_G3, NOTE_G3, NOTE_D4, NOTE_G4, NOTE_D4,
+      NOTE_G4, NOTE_A4, NOTE_FS4, NOTE_D4, NOTE_G4, NOTE_AS4, NOTE_C4, NOTE_G4,
+      NOTE_AS4, NOTE_C5, NOTE_CS5, 0, NOTE_D5, NOTE_FS5, NOTE_AS4, NOTE_C5, NOTE_CS5, 0, NOTE_D5, NOTE_FS5,  
+      NOTE_G4, NOTE_AS4, NOTE_C5, NOTE_G4, 
+      NOTE_AS4, NOTE_C5, NOTE_CS5, 0, NOTE_D5, NOTE_FS5, NOTE_AS4, NOTE_C5, NOTE_CS5, 0, NOTE_D5, NOTE_FS5,  
+      NOTE_FS5, NOTE_D5, NOTE_G5,
+    };
+    for (int i = 0; i < sizeof(mainDummy); i++) mainTone[i] = mainDummy[i];
+
+    byte bassDummyDuration[] = {
+      1, 1, 1, 1, 1, 1, 1, 1, 
+      8, 8, 4, 4, 4, 4, 4, 4, 4
+      4, 4, 4, 4, 4, 4, 4, 4,
+      8, 8, 4, 4, 4, 1, 8, 8, 4, 4, 4,
+      8, 8, 4, 4, 4, 4, 4, 4, 4,
+      2, 2, 2, 2, 4, 4, 4, 4, 
+      8, 4, 4, 6, 4, 4, 4, 4,
+      4, 8, 8, 8, 8, 4, 4, 8, 8, 8, 8, 4,
+      4, 4, 4, 4,
+      4, 8, 8, 8, 8, 4, 4, 8, 8, 8, 8, 4,
+      4, 4, 1,
+      
+      
+      
+      
+       
+      
+     
+
+    };
+    for (int i = 0; i < sizeof(dummyDuration); i++) mainDuration[i] = dummyDuration[i];
+
   }
 
 void stopSong()
