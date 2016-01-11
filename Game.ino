@@ -122,32 +122,34 @@ void tick()
   else if (isDead) // If the player is dead
   {
     Serial.println("[GAME] Player has died.");
-    
+
+    stopSong();
+
     switch (currentLevel)
     {
       case 1:
         displayScore = 0;
 
-        displayScore += (score / MAX_SCORE) * 4;
-        
+        displayScore += (int) ((double) ((double) score / (double) MAX_SCORE) * 5);
+
         break;
       case 2:
-        displayScore = 4;
+        displayScore = 5;
 
-        displayScore += (score / MAX_SCORE) * 4;
-        
+        displayScore += (int) ((double) ((double) score / (double) MAX_SCORE) * 5);
+
         break;
       case 3:
-        displayScore = 8;
+        displayScore = 10;
 
-        displayScore += (score / MAX_SCORE) * 8;
-        
+        displayScore += (int) ((double) ((double) score / (double) MAX_SCORE) * 6);
+
         break;
     }
 
     Serial.print("[GAME] Displaying Player Score: ");
     Serial.println(displayScore);
-    
+
     score = 0;
     levelInit = true;
     currentLevel = 1;
@@ -172,7 +174,7 @@ void tick()
       if (currentLevel == 1)
       {
         playerX = 2;
-        
+
         MAX_SCORE = 40;
 
         blockDropInterval = 30;
@@ -181,6 +183,8 @@ void tick()
         tickFrequencyChangeInterval = 1000;
         tickFrequency = 30;
         tickFrequencyMax = 60;
+
+        playSong(1);
       }
       else if (currentLevel == 2)
       {
@@ -203,6 +207,8 @@ void tick()
         tickFrequencyChangeInterval = 1000;
         tickFrequency = 30;
         tickFrequencyMax = 60;
+
+        playSong(2);
       }
       else
       {
@@ -418,7 +424,7 @@ void render()
   }
   else if (isComplete)
   {
-    switch(isCompleteFrame)
+    switch (isCompleteFrame)
     {
       case 4:
         drawPixel(1, 4);
@@ -462,17 +468,17 @@ void render()
         drawPixel(3, 4);
         drawPixel(4, 4);
         break;
-        case 35:
-        case 34:
-        case 33:
-        case 32:
-        case 31:
-        case 30:
-        case 29:
+      case 35:
+      case 34:
+      case 33:
+      case 32:
+      case 31:
+      case 30:
+      case 29:
       case 28:
       case 27:
       case 26:
-      break;
+        break;
       case 25:
         if (displayScore > 15) drawPixel(4, 4);
         else isCompleteFrame = 26;

@@ -38,7 +38,7 @@ long currentTime = 0; // The current time in milliseconds
 // The setup script
 void setup()
 {
-  Serial.begin(9600);
+  // Serial.begin(9600);
 
   // Sets up the pins
   pinMode(buttonPinLeft, INPUT);

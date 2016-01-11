@@ -757,7 +757,7 @@ void playSong(byte songIndex)
     bassDuration[82] = 8;
     bassDuration[83] = 8;
     bassDuration[84] = 4;
-    bassDuration[85] = 4;
+    bassDuration[85] = 8;
     bassDuration[86] = 4;
     bassDuration[87] = 1;
 
