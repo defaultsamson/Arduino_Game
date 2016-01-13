@@ -25,13 +25,13 @@ void updateInput()
   }
 
   /*
-  Serial.print("(");
-  Serial.print(inputLeft);
-  Serial.print(", ");
-  Serial.print(inputRight);
-  Serial.println(")");
+    Serial.print("(");
+    Serial.print(inputLeft);
+    Serial.print(", ");
+    Serial.print(inputRight);
+    Serial.println(")");
   */
-  
+
   // Sets the previous button states for the next time input() is called
   leftPrevButtonState = leftButtonState;
   rightPrevButtonState = rightButtonState;

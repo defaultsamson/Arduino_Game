@@ -130,19 +130,19 @@ void tick()
       case 1:
         displayScore = 0;
 
-        displayScore += (int) ((double) ((double) score / (double) MAX_SCORE) * 5);
+        displayScore += (byte) ((double) ((double) score / (double) MAX_SCORE) * 5);
 
         break;
       case 2:
         displayScore = 5;
 
-        displayScore += (int) ((double) ((double) score / (double) MAX_SCORE) * 5);
+        displayScore += (byte) ((double) ((double) score / (double) MAX_SCORE) * 5);
 
         break;
       case 3:
         displayScore = 10;
 
-        displayScore += (int) ((double) ((double) score / (double) MAX_SCORE) * 6);
+        displayScore += (byte) ((double) ((double) score / (double) MAX_SCORE) * 6);
 
         break;
     }
@@ -156,6 +156,7 @@ void tick()
     isDead = false;
     isComplete = true;
     stopSong();
+    clearBlocks();
   }
   if (isComplete)
   {
@@ -173,7 +174,7 @@ void tick()
 
       if (currentLevel == 1)
       {
-        playerX = 2;
+        playerX = 3;
 
         MAX_SCORE = 40;
 
@@ -184,7 +185,7 @@ void tick()
         tickFrequency = 30;
         tickFrequencyMax = 60;
 
-        playSong(1);
+        playSong(2);
       }
       else if (currentLevel == 2)
       {
@@ -208,7 +209,7 @@ void tick()
         tickFrequency = 30;
         tickFrequencyMax = 60;
 
-        playSong(2);
+        playSong(1);
       }
       else
       {
@@ -244,7 +245,6 @@ void tick()
     // Spawns blocks each interval
     if (currentTick % blockDropInterval == 0)
     {
-      playSound(1);
       score++; // Give the player a point each block drop
 
       if (currentLevel == 1) // First level, single blocks
@@ -477,7 +477,9 @@ void render()
       case 29:
       case 28:
       case 27:
+        isCompleteFrame = 26;
       case 26:
+        showScore(displayScore);
         break;
       case 25:
         if (displayScore > 15) drawPixel(4, 4);
@@ -548,8 +550,42 @@ void render()
   renderToHardware(); // Renders the draws data to the LED's
 }
 
-void playSound(byte sound)
+void showScore(byte score)
 {
-  //tonePlayer[0].play(NOTE_C4, 1000);
+  switch (score)
+  {
+    case 16:
+      drawPixel(4, 4);
+    case 15:
+      drawPixel(3, 4);
+    case 14:
+      drawPixel(2, 4);
+    case 13:
+      drawPixel(1, 4);
+    case 12:
+      drawPixel(4, 3);
+    case 11:
+      drawPixel(3, 3);
+    case 10:
+      drawPixel(2, 3);
+    case 9:
+      drawPixel(1, 3);
+    case 8:
+      drawPixel(4, 2);
+    case 7:
+      drawPixel(3, 2);
+    case 6:
+      drawPixel(2, 2);
+    case 5:
+      drawPixel(1, 2);
+    case 4:
+      drawPixel(4, 1);
+    case 3:
+      drawPixel(3, 1);
+    case 2:
+      drawPixel(2, 1);
+    case 1:
+      drawPixel(1, 1);
+  }
 }
 

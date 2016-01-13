@@ -1,6 +1,6 @@
 byte currentSong = 1; // The current song being played
 
-#define songArrayLengths 128
+#define songArrayLengths 220
 
 int mainTone[songArrayLengths];
 byte mainDuration[songArrayLengths];
