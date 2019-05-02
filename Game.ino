@@ -5,6 +5,7 @@ byte playerX = 2; // The player's x ordinate (defaults to 2 when game first star
 boolean isMenu = true; // Tells whether the player is in the main menu or not
 boolean isDead = false; // Tells whether the player has died or not
 boolean isWin = false; // Tells whether the player has won the level or not
+boolean isComplete = false; // Tells whether the player has won the level or not
 
 byte currentLevel = 1; // The current level that the player is on
 boolean levelInit = true; // If program should initialize the variables using for tick to the new currentLevel's settings
@@ -12,15 +13,55 @@ boolean levelInit = true; // If program should initialize the variables using fo
 byte blockDropInterval; // The amount of ticks to wait before dropping a block
 byte blockProgressInterval; // The amount of ticks to wait before progressing all block
 
-int tickFrequencyChangeInterval; // The amount of milliseconds to wait before increasing the tick frequency
-byte tickFrequencyMax; // The maximum tick frequency
-
 byte MAX_SCORE; // The score a player has to reach to beat the level
 byte score; // The current score of the player
 byte displayScore; // The display score for the end LED's
 
-byte menuLeft = 0; // The bars being shown at the left of the menu screen
-byte menuRight = 0; // The bars being shown at the right of the menu screen
+int isCompleteFrame = 0;
+
+// Left is true, right is false
+boolean previouslyTypedMenu[] = {false, false, false, false, false, false, false, false};
+void updateCheats(boolean isLeft)
+{
+  for (int i = sizeof(previouslyTypedMenu); i > 0; i--) previouslyTypedMenu[i] = previouslyTypedMenu[i - 1];
+  previouslyTypedMenu[0] = isLeft;
+
+  boolean doTetris = true;
+  boolean playTetris[] = {true, true, false, true, false, false, true, true};
+  for (int i = 0; i < sizeof(previouslyTypedMenu); i++) if (previouslyTypedMenu[i] != playTetris[i]) doTetris = false;
+
+  if (doTetris)
+  {
+    playSong(2);
+    resetCheats();
+    return;
+  }
+
+  boolean bossLevel = true;
+  boolean bossLevelA[] = {false, true, false, true, false, true, true, false};
+  for (int i = 0; i < sizeof(previouslyTypedMenu); i++) if (previouslyTypedMenu[i] != bossLevelA[i]) bossLevel = false;
+
+  if (bossLevel)
+  {
+    levelInit = true;
+    currentLevel = 3;
+    isDead = false;
+    score = 0;
+    displayScore = 0;
+    isMenu = false;
+    stopSong();
+    resetCheats();
+    return;
+  }
+}
+
+void resetCheats()
+{
+  for (int i = 0; i < sizeof(previouslyTypedMenu); i++) previouslyTypedMenu[i] = false;
+}
+
+byte menuLeft = 0;
+byte menuRight = 0;
 
 // Does all the game math
 void tick()
@@ -31,9 +72,22 @@ void tick()
     {
       menuLeft = 0;
       menuRight = 0;
+      levelInit = true;
       isMenu = false;
+      resetCheats();
     }
 
+    // Updates the cheats scripts
+    if (isLeftButton())
+    {
+      updateCheats(true);
+    }
+    if (isRightButton())
+    {
+      updateCheats(false);
+    }
+
+    // Updates the menu start screen bars
     if (currentTick % 20 == 0)
     {
       if (isLeftButtonUnfil())
@@ -57,6 +111,7 @@ void tick()
   }
   else if (isWin) // If the player won the level
   {
+    if (currentLevel == 3) isComplete = true;
     Serial.print("[GAME] Player has completed level ");
     Serial.print(currentLevel);
     Serial.println(".");
@@ -67,11 +122,45 @@ void tick()
   else if (isDead) // If the player is dead
   {
     Serial.println("[GAME] Player has died.");
+
+    stopSong();
+
+    switch (currentLevel)
+    {
+      case 1:
+        displayScore = 0;
+
+        displayScore += (byte) ((double) ((double) score / (double) MAX_SCORE) * 5);
+
+        break;
+      case 2:
+        displayScore = 5;
+
+        displayScore += (byte) ((double) ((double) score / (double) MAX_SCORE) * 5);
+
+        break;
+      case 3:
+        displayScore = 10;
+
+        displayScore += (byte) ((double) ((double) score / (double) MAX_SCORE) * 6);
+
+        break;
+    }
+
+    Serial.print("[GAME] Displaying Player Score: ");
+    Serial.println(displayScore);
+
+    score = 0;
     levelInit = true;
     currentLevel = 1;
     isDead = false;
-    isMenu = true;
+    isComplete = true;
     stopSong();
+    clearBlocks();
+  }
+  if (isComplete)
+  {
+    if (currentTick % 10 == 0) isCompleteFrame++;
   }
   else // Else, the player must still be in-game
   {
@@ -81,28 +170,31 @@ void tick()
       Serial.print("[GAME] Initializing Level ");
       Serial.println(currentLevel);
       score = 0;
-      playerX = 2;
       clearBlocks();
 
       if (currentLevel == 1)
       {
-        MAX_SCORE = 80;
+        playerX = 3;
+
+        MAX_SCORE = 40;
 
         blockDropInterval = 30;
         blockProgressInterval = 15;
 
-        tickFrequencyChangeInterval = 60;
+        tickFrequencyChangeInterval = 1000;
         tickFrequency = 30;
         tickFrequencyMax = 60;
+
+        playSong(2);
       }
       else if (currentLevel == 2)
       {
-        MAX_SCORE = 40;
+        MAX_SCORE = 5;
 
-        blockDropInterval = 60;
-        blockProgressInterval = 15;
+        blockDropInterval = 62;
+        blockProgressInterval = 17;
 
-        tickFrequencyChangeInterval = 60;
+        tickFrequencyChangeInterval = 1000;
         tickFrequency = 30;
         tickFrequencyMax = 60;
       }
@@ -113,9 +205,11 @@ void tick()
         blockDropInterval = 60;
         blockProgressInterval = 15;
 
-        tickFrequencyChangeInterval = 60;
+        tickFrequencyChangeInterval = 1000;
         tickFrequency = 30;
         tickFrequencyMax = 60;
+
+        playSong(1);
       }
       else
       {
@@ -145,10 +239,7 @@ void tick()
     // Progress the blocks
     if (currentTick % blockProgressInterval == 0)
     {
-      for (int i = 0; i < blockCount(); i++)
-      {
-        progressBlock(i);
-      }
+      progressBlocks();
     }
 
     // Spawns blocks each interval
@@ -268,13 +359,6 @@ void tick()
       }
     }
 
-    // TODO Move outside of tick loop so the speed increase isn't exponential
-    // Every specified ticks, make the tick interval faster if it is above the minimum interval rate
-    if (currentTick % tickFrequencyChangeInterval == 0 && tickFrequency < tickFrequencyMax)
-    {
-      tickFrequency++;
-    }
-
     // If the player's score is greater than that required to win the level
     if (score >= MAX_SCORE)
     {
@@ -338,6 +422,121 @@ void render()
   {
 
   }
+  else if (isComplete)
+  {
+    switch (isCompleteFrame)
+    {
+      case 4:
+        drawPixel(1, 4);
+        drawPixel(2, 4);
+        drawPixel(3, 4);
+        drawPixel(4, 4);
+      case 3:
+        drawPixel(1, 3);
+        drawPixel(2, 3);
+        drawPixel(3, 3);
+        drawPixel(4, 3);
+      case 2:
+        drawPixel(1, 2);
+        drawPixel(2, 2);
+        drawPixel(3, 2);
+        drawPixel(4, 2);
+      case 1:
+        drawPixel(1, 1);
+        drawPixel(2, 1);
+        drawPixel(3, 1);
+        drawPixel(4, 1);
+        break;
+      case 5:
+        drawPixel(1, 1);
+        drawPixel(2, 1);
+        drawPixel(3, 1);
+        drawPixel(4, 1);
+      case 6:
+        drawPixel(1, 2);
+        drawPixel(2, 2);
+        drawPixel(3, 2);
+        drawPixel(4, 2);
+      case 7:
+        drawPixel(1, 3);
+        drawPixel(2, 3);
+        drawPixel(3, 3);
+        drawPixel(4, 3);
+      case 8:
+        drawPixel(1, 4);
+        drawPixel(2, 4);
+        drawPixel(3, 4);
+        drawPixel(4, 4);
+        break;
+      case 35:
+      case 34:
+      case 33:
+      case 32:
+      case 31:
+      case 30:
+      case 29:
+      case 28:
+      case 27:
+        isCompleteFrame = 26;
+      case 26:
+        showScore(displayScore);
+        break;
+      case 25:
+        if (displayScore > 15) drawPixel(4, 4);
+        else isCompleteFrame = 26;
+      case 24:
+        if (displayScore > 14) drawPixel(3, 4);
+        else isCompleteFrame = 26;
+      case 23:
+        if (displayScore > 13) drawPixel(2, 4);
+        else isCompleteFrame = 26;
+      case 22:
+        if (displayScore > 12) drawPixel(1, 4);
+        else isCompleteFrame = 26;
+      case 21:
+        if (displayScore > 11) drawPixel(4, 3);
+        else isCompleteFrame = 26;
+      case 20:
+        if (displayScore > 10) drawPixel(3, 3);
+        else isCompleteFrame = 26;
+      case 19:
+        if (displayScore > 9) drawPixel(2, 3);
+        else isCompleteFrame = 26;
+      case 18:
+        if (displayScore > 8) drawPixel(1, 3);
+        else isCompleteFrame = 26;
+      case 17:
+        if (displayScore > 7) drawPixel(4, 2);
+        else isCompleteFrame = 26;
+      case 16:
+        if (displayScore > 6) drawPixel(3, 2);
+        else isCompleteFrame = 26;
+      case 15:
+        if (displayScore > 5) drawPixel(2, 2);
+        else isCompleteFrame = 26;
+      case 14:
+        if (displayScore > 4) drawPixel(1, 2);
+        else isCompleteFrame = 26;
+      case 13:
+        if (displayScore > 3) drawPixel(4, 1);
+        else isCompleteFrame = 26;
+      case 12:
+        if (displayScore > 2) drawPixel(3, 1);
+        else isCompleteFrame = 26;
+      case 11:
+        if (displayScore > 1) drawPixel(2, 1);
+        else isCompleteFrame = 26;
+      case 10:
+        if (displayScore > 0) drawPixel(1, 1);
+        else isCompleteFrame = 26;
+        break;
+      case 36:
+        isCompleteFrame = 0;
+        isComplete = false;
+        isMenu = true;
+        break;
+    }
+  }
   else // In-game
   {
     drawPixel(playerX, 1); // Player is always on the 1st layer
@@ -350,3 +549,43 @@ void render()
   }
   renderToHardware(); // Renders the draws data to the LED's
 }
+
+void showScore(byte score)
+{
+  switch (score)
+  {
+    case 16:
+      drawPixel(4, 4);
+    case 15:
+      drawPixel(3, 4);
+    case 14:
+      drawPixel(2, 4);
+    case 13:
+      drawPixel(1, 4);
+    case 12:
+      drawPixel(4, 3);
+    case 11:
+      drawPixel(3, 3);
+    case 10:
+      drawPixel(2, 3);
+    case 9:
+      drawPixel(1, 3);
+    case 8:
+      drawPixel(4, 2);
+    case 7:
+      drawPixel(3, 2);
+    case 6:
+      drawPixel(2, 2);
+    case 5:
+      drawPixel(1, 2);
+    case 4:
+      drawPixel(4, 1);
+    case 3:
+      drawPixel(3, 1);
+    case 2:
+      drawPixel(2, 1);
+    case 1:
+      drawPixel(1, 1);
+  }
+}
+
